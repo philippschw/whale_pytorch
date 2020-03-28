@@ -8,6 +8,8 @@ import math
 import cv2
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
+import ipdb
+
 BASE_SIZE = 256
 def do_length_decode(rle, H=192, W=384, fill_value=255):
     mask = np.zeros((H,W), np.uint8)
@@ -102,6 +104,7 @@ class WhaleDataset(Dataset):
             mask = cv2.resize(mask, image.shape[:2][::-1])
         except:
             mask = cv2.imread('./WC_input/masks/' + name, cv2.IMREAD_GRAYSCALE)
+        ipdb.set_trace()
         x0, y0, x1, y1 = self.bbox_dict[name]
         if mask is None:
             mask = np.zeros_like(image[:,:,0])
