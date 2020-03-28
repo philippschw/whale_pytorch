@@ -96,7 +96,9 @@ class WhaleDataset(Dataset):
 
     def get_image(self, name, transform, label, mode='train'):
         image = cv2.imread('./WC_input/{}/{}'.format(mode, name))
+        print (name)
         print (image.shape)
+        print ('------------------------------------------------')
         # for Pseudo label
         if image is None:
             image = cv2.imread('./WC_input/test/{}'.format(name))
