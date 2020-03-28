@@ -98,7 +98,7 @@ class WhaleDataset(Dataset):
         image = cv2.imread('./WC_input/{}/{}'.format(mode, name))
         print (name)
         print (image.shape)
-        print ('------------------------------------------------')
+        print ('--------------------train------------------------')
         # for Pseudo label
         if image is None:
             image = cv2.imread('./WC_input/test/{}'.format(name))
@@ -156,6 +156,9 @@ class WhaleTestDataset(Dataset):
 
     def get_image(self, name, transform, mode='train'):
         image = cv2.imread('./WC_input/{}/{}'.format(mode, name))
+        print (name)
+        print (image.shape)
+        print ('---------------------val------------------------')
         try:
             mask = do_length_decode(self.rle_masks[name.split('.')[0]]['rle_mask'])
             mask = cv2.resize(mask, image.shape[:2][::-1])
@@ -166,8 +169,6 @@ class WhaleTestDataset(Dataset):
         x0, y0, x1, y1 = self.bbox_dict[name]
         image = image[int(y0):int(y1), int(x0):int(x1)]
         mask = mask[int(y0):int(y1), int(x0):int(x1)]
-        print (image.shape)
-        print (mask.shape)
         image = transform(image, mask)
         return image
 
