@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# Tensorflow Models
+*.hdf5
+
 # input
 input/
 result/
