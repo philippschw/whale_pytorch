@@ -59,7 +59,7 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
     dataloader_test = DataLoader(dst_test, batch_size=batch_size, num_workers=8, collate_fn=train_collate)
     label_id = dst_test.labels_dict
     id_label = {v:k for k, v in label_id.items()}
-    id_label[5004] = 'new_whale'
+    id_label[5004] = '-1'
     model = model_whale(num_classes=5004 * 2, inchannels=4, model_name=model_name).cuda()
     resultDir = './WC_result/{}_{}'.format(model_name, fold_index)
     checkPoint = os.path.join(resultDir, 'checkpoint')

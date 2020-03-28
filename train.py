@@ -58,7 +58,7 @@ def transform_train(image, mask, label):
     if 1:
         if random.random() < 0.5:
             image = np.fliplr(image)
-            if not label == 'new_whale':
+            if not label == '-1':
                 add_ += 5004
         image, mask = image[:,:,:3], image[:,:, 3]
     if random.random() < 0.5:
