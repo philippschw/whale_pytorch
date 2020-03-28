@@ -100,7 +100,7 @@ def transform_train(image, mask, label):
 
 def transform_valid(image, mask):
     images = []
-    ipdb.set_trace()
+    # ipdb.set_trace()
     image = cv2.resize(image, (512, 256))
     mask = cv2.resize(mask, (512, 256))
     mask = mask[:, :, None]
