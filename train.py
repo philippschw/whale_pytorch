@@ -9,7 +9,7 @@ from models import *
 import torch
 import time
 from utils import *
-from torch.nn.parallel.data_parallel import data_parallel
+# from torch.nn.parallel.data_parallel import data_parallel
 
 import ipdb
 
@@ -130,7 +130,8 @@ def eval(model, dataLoader_valid):
             images, labels, names = valid_data
             images = images.cuda()
             labels = labels.cuda().long()
-            feature, local_feat, results = data_parallel(model, images)
+            feature, local_feat, results = model(images)
+            # feature, local_feat, results = data_parallel(model, images)
             model.getLoss(feature[::2], local_feat[::2], results[::2], labels)
             results = torch.sigmoid(results)
             results_zeros = (results[::2, :5004] + results[1::2, 5004:])/2
@@ -262,7 +263,8 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
             images, labels = data
             images = images.cuda()
             labels = labels.cuda().long()
-            global_feat, local_feat, results = data_parallel(model,images)
+            global_feat, local_feat, results = model(images)
+            # global_feat, local_feat, results = data_parallel(model,images)
             model.getLoss(global_feat, local_feat, results, labels)
             batch_loss = model.loss
 
