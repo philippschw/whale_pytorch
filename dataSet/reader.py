@@ -166,6 +166,8 @@ class WhaleTestDataset(Dataset):
         x0, y0, x1, y1 = self.bbox_dict[name]
         image = image[int(y0):int(y1), int(x0):int(x1)]
         mask = mask[int(y0):int(y1), int(x0):int(x1)]
+        print (image.shape)
+        print (mask.shape)
         image = transform(image, mask)
         return image
 
