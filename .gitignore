@@ -12,6 +12,7 @@ __pycache__/
 # input
 input/
 result/
+WC_input/
 
 # Distribution / packaging
 .Python
