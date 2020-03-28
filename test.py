@@ -53,7 +53,7 @@ def transform(image, mask):
 
 
 def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
-    names_test = os.listdir('./input/test')
+    names_test = os.listdir('./WC_input/test')
     batch_size = 16
     dst_test = WhaleTestDataset(names_test, mode='test', transform=transform)
     dataloader_test = DataLoader(dst_test, batch_size=batch_size, num_workers=8, collate_fn=train_collate)
@@ -61,7 +61,7 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
     id_label = {v:k for k, v in label_id.items()}
     id_label[5004] = 'new_whale'
     model = model_whale(num_classes=5004 * 2, inchannels=4, model_name=model_name).cuda()
-    resultDir = './result/{}_{}'.format(model_name, fold_index)
+    resultDir = './WC_result/{}_{}'.format(model_name, fold_index)
     checkPoint = os.path.join(resultDir, 'checkpoint')
 
     npy_dir = resultDir + '/out_{}'.format(checkPoint_start)
