@@ -96,6 +96,7 @@ class WhaleDataset(Dataset):
 
     def get_image(self, name, transform, label, mode='train'):
         image = cv2.imread('./WC_input/{}/{}'.format(mode, name))
+        print (image.shape)
         # for Pseudo label
         if image is None:
             image = cv2.imread('./WC_input/test/{}'.format(name))
@@ -104,7 +105,7 @@ class WhaleDataset(Dataset):
             mask = cv2.resize(mask, image.shape[:2][::-1])
         except:
             mask = cv2.imread('./WC_input/masks/' + name, cv2.IMREAD_GRAYSCALE)
-        ipdb.set_trace()
+        # ipdb.set_trace()
         x0, y0, x1, y1 = self.bbox_dict[name]
         if mask is None:
             mask = np.zeros_like(image[:,:,0])
