@@ -108,12 +108,12 @@ class WhaleDataset(Dataset):
         except:
             mask = cv2.imread('./WC_input/masks/' + name, cv2.IMREAD_GRAYSCALE)
         # ipdb.set_trace()
-        x0, y0, x1, y1 = self.bbox_dict[name]
-        if mask is None:
-            mask = np.zeros_like(image[:,:,0])
-        image = image[int(y0):int(y1), int(x0):int(x1)]
-        mask = mask[int(y0):int(y1), int(x0):int(x1)]
-        image, add_ = transform(image, mask, label)
+        # x0, y0, x1, y1 = self.bbox_dict[name]
+        # if mask is None:
+        #     mask = np.zeros_like(image[:,:,0])
+        # image = image[int(y0):int(y1), int(x0):int(x1)]
+        # mask = mask[int(y0):int(y1), int(x0):int(x1)]
+        # image, add_ = transform(image, mask, label)
         return image, add_
 
     def __getitem__(self, index):
