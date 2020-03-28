@@ -166,9 +166,12 @@ class WhaleTestDataset(Dataset):
             mask = cv2.imread('./WC_input/masks/' + name, cv2.IMREAD_GRAYSCALE)
         if mask is None:
             mask = np.zeros_like(image[:, :, 0])
-        x0, y0, x1, y1 = self.bbox_dict[name]
-        image = image[int(y0):int(y1), int(x0):int(x1)]
-        mask = mask[int(y0):int(y1), int(x0):int(x1)]
+        # x0, y0, x1, y1 = self.bbox_dict[name]
+        # image = image[int(y0):int(y1), int(x0):int(x1)]
+        # mask = mask[int(y0):int(y1), int(x0):int(x1)]
+        # print ('---------------------val: size after bbbox------------------------')
+        # print (name)
+        # print (image.shape)
         image = transform(image, mask)
         return image
 
