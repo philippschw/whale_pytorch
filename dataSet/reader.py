@@ -96,9 +96,9 @@ class WhaleDataset(Dataset):
 
     def get_image(self, name, transform, label, mode='train'):
         image = cv2.imread('./WC_input/{}/{}'.format(mode, name))
-        print (name)
-        print (image.shape)
-        print ('--------------------train------------------------')
+        # print (name)
+        # print (image.shape)
+        # print ('--------------------train------------------------')
         # for Pseudo label
         if image is None:
             image = cv2.imread('./WC_input/test/{}'.format(name))
@@ -156,9 +156,9 @@ class WhaleTestDataset(Dataset):
 
     def get_image(self, name, transform, mode='train'):
         image = cv2.imread('./WC_input/{}/{}'.format(mode, name))
-        print (name)
-        print (image.shape)
-        print ('---------------------val------------------------')
+        # print (name)
+        # print (image.shape)
+        # print ('---------------------val------------------------')
         try:
             mask = do_length_decode(self.rle_masks[name.split('.')[0]]['rle_mask'])
             mask = cv2.resize(mask, image.shape[:2][::-1])
