@@ -62,7 +62,7 @@ def get_df_top20(dist_mat, test_imgs, allnames):
 def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
     mode = 'data'
     names_test = os.listdir(f'./WC_input/{mode}')
-    sample_submission = pd.read_csv('./WC_input/sample_submission.csv')
+    sample_submission = pd.read_csv('./WC_input/sample_submission.csv', header=None)
     test_imgs = sample_submission.iloc[:, 0].tolist()
     batch_size = 60
     dst_test = WhaleTestDataset(names_test, mode=mode, transform=transform)
