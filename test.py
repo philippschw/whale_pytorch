@@ -59,8 +59,8 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
     dataloader_test = DataLoader(dst_test, batch_size=batch_size, num_workers=8, collate_fn=train_collate)
     label_id = dst_test.labels_dict
     id_label = {v:k for k, v in label_id.items()}
-    id_label[5004] = '-1'
-    model = model_whale(num_classes=5004 * 2, inchannels=4, model_name=model_name).cuda()
+    id_label[2233] = '-1'
+    model = model_whale(num_classes=2233 * 2, inchannels=4, model_name=model_name).cuda()
     resultDir = './WC_result/{}_{}'.format(model_name, fold_index)
     checkPoint = os.path.join(resultDir, 'checkpoint')
 
@@ -80,7 +80,7 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
             images = images.cuda()
             _, _, outs = model(images)
             outs = torch.sigmoid(outs)
-            outs_zero = (outs[::2, :5004] + outs[1::2, 5004:])/2
+            outs_zero = (outs[::2, :2233] + outs[1::2, 2233:])/2
             outs = outs_zero
             for out, name in zip(outs, names):
                 out = torch.cat([out, torch.ones(1).cuda()*best_t], 0)

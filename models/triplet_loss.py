@@ -57,7 +57,7 @@ def hard_example_mining(dist_mat, labels, return_inds=False):
     N = dist_mat.size(0)
 
     # shape [N, N]
-    new_whale_indexs = (labels == 5004 * 2).nonzero()
+    new_whale_indexs = (labels == 2233 * 2).nonzero()
     is_pos = labels.expand(N, N).eq(labels.expand(N, N).t())
     is_neg = labels.expand(N, N).ne(labels.expand(N, N).t())
     for i in new_whale_indexs:
@@ -158,7 +158,7 @@ def local_dist(x, y):
 #             self.ranking_loss = nn.SoftMarginLoss()
 #
 #     def __call__(self, feat, labels, normalize_feature=False):
-#         # indexs = (labels != 5004).nonzero().view(-1)
+#         # indexs = (labels != 2233).nonzero().view(-1)
 #         # global_feat = global_feat[indexs].contiguous()
 #         # labels = labels[indexs].contiguous()
 #         if normalize_feature:

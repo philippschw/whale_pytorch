@@ -77,7 +77,7 @@ class WhaleDataset(Dataset):
         id = 0
         for name in labelName:
             if name == '-1':
-                dict_label[name] = 5004 * 2
+                dict_label[name] = 2233 * 2
                 continue
             dict_label[name] = id
             id += 1
@@ -181,7 +181,7 @@ class WhaleTestDataset(Dataset):
         id = 0
         for name in labelName:
             if name == '-1':
-                dict_label[name] = 5004 * 2
+                dict_label[name] = 2233 * 2
                 continue
             dict_label[name] = id
             id += 1
