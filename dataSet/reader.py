@@ -97,10 +97,7 @@ class WhaleDataset(Dataset):
 
     def get_image(self, name, transform, label, mode='train'):
         image = cv2.imread('./WC_input/{}/{}'.format(mode, name))
-        # print (name)
-        # print (image.shape)
-        # print ('--------------------train------------------------')
-        # for Pseudo label
+
         if image is None:
             image = cv2.imread('./WC_input/test/{}'.format(name))
         try:
@@ -108,12 +105,11 @@ class WhaleDataset(Dataset):
             mask = cv2.resize(mask, image.shape[:2][::-1])
         except:
             mask = cv2.imread('./WC_input/masks/' + name, cv2.IMREAD_GRAYSCALE)
-        # ipdb.set_trace()
-        # x0, y0, x1, y1 = self.bbox_dict[name]
-        # if mask is None:
-        #     mask = np.zeros_like(image[:,:,0])
-        # image = image[int(y0):int(y1), int(x0):int(x1)]
-        # mask = mask[int(y0):int(y1), int(x0):int(x1)]
+        x0, y0, x1, y1 = self.bbox_dict[name]
+        if mask is None:
+            mask = np.zeros_like(image[:,:,0])
+        image = image[int(y0):int(y1), int(x0):int(x1)]
+        mask = mask[int(y0):int(y1), int(x0):int(x1)]
         image, add_ = transform(image, mask, label)
         return image, add_
 
@@ -151,16 +147,13 @@ class WhaleTestDataset(Dataset):
         self.labels_dict = self.load_labels()
         self.rle_masks = self.load_mask()
         self.transform = transform
-        # print ('WhaleTestDataset: self.labels', self.labels)
 
     def __len__(self):
         return len(self.names)
 
     def get_image(self, name, transform, mode='train'):
         image = cv2.imread('./WC_input/{}/{}'.format(mode, name))
-        # print (name)
-        # print (image.shape)
-        # print ('---------------------val------------------------')
+
         try:
             mask = do_length_decode(self.rle_masks[name.split('.')[0]]['rle_mask'])
             mask = cv2.resize(mask, image.shape[:2][::-1])
@@ -168,12 +161,9 @@ class WhaleTestDataset(Dataset):
             mask = cv2.imread('./WC_input/masks/' + name, cv2.IMREAD_GRAYSCALE)
         if mask is None:
             mask = np.zeros_like(image[:, :, 0])
-        # x0, y0, x1, y1 = self.bbox_dict[name]
-        # image = image[int(y0):int(y1), int(x0):int(x1)]
-        # mask = mask[int(y0):int(y1), int(x0):int(x1)]
-        # print ('---------------------val: size after bbbox------------------------')
-        # print (name)
-        # print (image.shape)
+        x0, y0, x1, y1 = self.bbox_dict[name]
+        image = image[int(y0):int(y1), int(x0):int(x1)]
+        mask = mask[int(y0):int(y1), int(x0):int(x1)]
         image = transform(image, mask)
         return image
 
@@ -218,9 +208,6 @@ class WhaleTestDataset(Dataset):
             return image, name
         elif self.mode in ['valid', 'train']:
             name = self.names[index]
-            # print ('self.labels_dict', self.labels_dict)
-            # print (self.labels[index])
-            # print (type(self.labels[index]))
             label = self.labels_dict[self.labels[index]]
             image = self.get_image(name, self.transform)
             return image, label, name
