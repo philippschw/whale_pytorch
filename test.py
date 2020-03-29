@@ -55,7 +55,7 @@ def transform(image, mask):
 
 def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
     names_test = os.listdir('./WC_input/test')
-    batch_size = 24
+    batch_size = 64
     dst_test = WhaleTestDataset(names_test, mode='test', transform=transform)
     dataloader_test = DataLoader(dst_test, batch_size=batch_size, num_workers=8, collate_fn=train_collate)
     label_id = dst_test.labels_dict
@@ -96,17 +96,21 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
                 str_top5 = str_top5[:-1]
                 allnames.append(name)
                 labelstrs.append(str_top5)
-        ipdb.set_trace()
         all_global_feat = torch.cat(global_feats)
 
         dist_global = euclidean_dist(all_global_feat, all_global_feat)
-        
+
         dist_global_normal = dist_global[::2, ::2]
         dist_global_flipped = dist_global[1::2, 1::2]
-        dist_global_avg = (outs[::2, :2233] + outs[1::2, 2233:])/2
+        dist_global_avg = (dist_global[::2, ::2] + dist_global[1::2, 1::2])/2
         pd.DataFrame(dist_global_normal.cpu().numpy()).to_csv('dist_global_normal.csv', index=False)
         pd.DataFrame(dist_global_flipped.cpu().numpy()).to_csv('dist_global_flipped.csv', index=False)
         pd.DataFrame(dist_global_avg.cpu().numpy()).to_csv('dist_global_avg.csv', index=False)
+
+        df = dist_global_avg.cpu().numpy()
+        top20 = df.values.argsort()[-20:][::-1]
+        top20 = top20.reshape(-1, 20)
+        ipdb.set_trace()
 
     pd.DataFrame({'Image': allnames,'Id': labelstrs}).to_csv('test_{}_sub_fold{}.csv'.format(model_name, fold_index), index=None)
 
