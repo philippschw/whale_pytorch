@@ -135,6 +135,7 @@ class WhaleDataset(Dataset):
         negative_image2, negative_add2 = self.get_image(negative_name2, self.transform_train, negative_label2)
 
         assert anchor_name != negative_name
+        print (label)
         return [anchor_image, positive_image, negative_image, negative_image2], \
                [self.labels_dict[label] + anchor_add, self.labels_dict[label] + positive_add, self.labels_dict[negative_label] + negative_add, self.labels_dict[negative_label2] + negative_add2]
 
