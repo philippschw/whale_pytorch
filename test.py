@@ -55,6 +55,7 @@ def transform(image, mask):
 
 def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
     names_test = os.listdir('./WC_input/data')
+    sample_submission = pd.read_csv('./WC_input/sample_submission.csv')
     batch_size = 64
     dst_test = WhaleTestDataset(names_test, mode='test', transform=transform)
     dataloader_test = DataLoader(dst_test, batch_size=batch_size, num_workers=8, collate_fn=train_collate)
@@ -112,7 +113,6 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
         top20 = top20.reshape(-1, 20)
         top20 = pd.DataFrame(top20)
         top20 = top20.applymap(lambda x: allnames[x])
-        sample_submission = pd.read_csv('./WC_input/sample_submision.csv')
         ipdb.set_trace()
         top20.to_csv('submission_{}_sub_fold{}.csv'.format(model_name, fold_index), header=False, index=False)
 
