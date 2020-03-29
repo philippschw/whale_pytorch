@@ -207,9 +207,9 @@ class WhaleTestDataset(Dataset):
             bbox_dict[Image] = [x0, y0, x1, y1]
         return bbox_dict
     def __getitem__(self, index):
-        if self.mode in ['test']:
+        if self.mode in ['test', 'data']:
             name = self.names[index]
-            image = self.get_image(name, self.transform, mode='test')
+            image = self.get_image(name, self.transform, mode=self.mode)
             return image, name
         elif self.mode in ['valid', 'train']:
             name = self.names[index]

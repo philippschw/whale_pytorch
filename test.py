@@ -114,7 +114,10 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
         top20 = top20.reshape(-1, 20)
         top20 = pd.DataFrame(top20)
         top20 = top20.applymap(lambda x: allnames[x])
-        ipdb.set_trace()
+        
+        test_imgs = sample_submission.iloc[:, 0].tolist()
+        top20 = top20[top20[0].isin(test_imgs)] 
+
         top20.to_csv('submission_{}_sub_fold{}.csv'.format(model_name, fold_index), header=False, index=False)
 
     pd.DataFrame({'Image': allnames,'Id': labelstrs}).to_csv('test_{}_sub_fold{}.csv'.format(model_name, fold_index), index=None)
