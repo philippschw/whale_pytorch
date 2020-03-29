@@ -9,7 +9,7 @@ from models import *
 import torch
 import time
 from utils import *
-# from torch.nn.parallel.data_parallel import data_parallel
+from torch.nn.parallel.data_parallel import data_parallel
 
 
 
@@ -130,8 +130,8 @@ def eval(model, dataLoader_valid):
             images, labels, names = valid_data
             images = images.cuda()
             labels = labels.cuda().long()
-            feature, local_feat, results = model(images)
-            # feature, local_feat, results = data_parallel(model, images)
+            # feature, local_feat, results = model(images)
+            feature, local_feat, results = data_parallel(model, images)
             model.getLoss(feature[::2], local_feat[::2], results[::2], labels)
             results = torch.sigmoid(results)
             results_zeros = (results[::2, :2233] + results[1::2, 2233:])/2
@@ -193,10 +193,13 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
     labels_valid = data_valid['Id'].tolist()
     num_data = len(names_train)
     dst_train = WhaleDataset(names_train, labels_train,mode='train',transform_train=transform_train, min_num_classes=min_num_class)
-    dataloader_train = DataLoader(dst_train, shuffle=True, drop_last=True, batch_size=batch_size, num_workers=16, collate_fn=train_collate)
+    dataloader_train = DataLoader(dst_train, shuffle=True, drop_last=True, batch_size=batch_size, num_workers=1,#16,
+                                 collate_fn=train_collate)
     print(dst_train.__len__())
     dst_valid = WhaleTestDataset(names_valid, labels_valid, mode='valid',transform=transform_valid)
-    dataloader_valid = DataLoader(dst_valid, shuffle=False, batch_size=batch_size * 2, num_workers=8, collate_fn=valid_collate)
+    dataloader_valid = DataLoader(dst_valid, shuffle=False, batch_size=batch_size * 2,
+                                 num_workers=1,#8,
+                                  collate_fn=valid_collate)
     train_loss = 0.0
     valid_loss = 0.0
     top1, top5, map5 = 0, 0, 0
@@ -263,8 +266,8 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
             images, labels = data
             images = images.cuda()
             labels = labels.cuda().long()
-            global_feat, local_feat, results = model(images)
-            # global_feat, local_feat, results = data_parallel(model,images)
+            # global_feat, local_feat, results = model(images)
+            global_feat, local_feat, results = data_parallel(model,images)
             model.getLoss(global_feat, local_feat, results, labels)
             batch_loss = model.loss
 
