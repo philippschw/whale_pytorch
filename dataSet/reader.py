@@ -71,7 +71,8 @@ class WhaleDataset(Dataset):
         return bbox_dict
 
     def load_labels(self):
-        label = pd.read_csv('./WC_input/label.csv')
+        dtypes = {'id': 'int', 'name': 'str'}
+        label = pd.read_csv('./WC_input/label.csv', dtype=dtypes)
         labelName = label['name'].tolist()
         dict_label = {}
         id = 0
@@ -175,7 +176,8 @@ class WhaleTestDataset(Dataset):
         return image
 
     def load_labels(self):
-        label = pd.read_csv('./WC_input/label.csv')
+        dtypes = {'id': 'int', 'name': 'str'}
+        label = pd.read_csv('./WC_input/label.csv', dtype=dtypes)
         labelName = label['name'].tolist()
         dict_label = {}
         id = 0
