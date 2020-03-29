@@ -312,7 +312,7 @@ if __name__ == '__main__':
         model_name = 'se_resnet50'
         fold_index = 2
         min_num_class = 1
-        checkPoint_start = 3000
+        checkPoint_start = 3600
         lr = 3e-4
         batch_size = 10
         print(5005%batch_size)

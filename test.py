@@ -57,7 +57,7 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
     mode = 'data'
     names_test = os.listdir(f'./WC_input/{mode}')
     sample_submission = pd.read_csv('./WC_input/sample_submission.csv')
-    batch_size = 64
+    batch_size = 60
     dst_test = WhaleTestDataset(names_test, mode=mode, transform=transform)
     dataloader_test = DataLoader(dst_test, batch_size=batch_size, num_workers=8, collate_fn=train_collate)
     label_id = dst_test.labels_dict
@@ -105,8 +105,8 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
         dist_global_normal = dist_global[::2, ::2]
         dist_global_flipped = dist_global[1::2, 1::2]
         dist_global_avg = (dist_global[::2, ::2] + dist_global[1::2, 1::2])/2
-        pd.DataFrame(dist_global_normal.cpu().numpy()).to_csv('dist_global_normal.csv', index=False)
-        pd.DataFrame(dist_global_flipped.cpu().numpy()).to_csv('dist_global_flipped.csv', index=False)
+        # pd.DataFrame(dist_global_normal.cpu().numpy()).to_csv('dist_global_normal.csv', index=False)
+        # pd.DataFrame(dist_global_flipped.cpu().numpy()).to_csv('dist_global_flipped.csv', index=False)
         pd.DataFrame(dist_global_avg.cpu().numpy()).to_csv('dist_global_avg.csv', index=False)
 
         df = dist_global_avg.cpu().numpy()
