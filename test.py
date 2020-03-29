@@ -51,12 +51,19 @@ def transform(image, mask):
 
     return images
 
-
+def get_df_top20(dist_mat, test_imgs, allnames):
+    dist_mat = dist_mat.cpu().numpy()
+    dist_mat_sorted = dist_mat.argsort()
+    df_top20 = pd.DataFrame(dist_mat_sorted[:, :21])
+    df_top20 = df_top20.applymap(lambda x: allnames[x])
+    df_top20 = df_top20[df_top20[0].isin(test_imgs)]
+    return df_top20
 
 def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
     mode = 'data'
     names_test = os.listdir(f'./WC_input/{mode}')
     sample_submission = pd.read_csv('./WC_input/sample_submission.csv')
+    test_imgs = sample_submission.iloc[:, 0].tolist()
     batch_size = 60
     dst_test = WhaleTestDataset(names_test, mode=mode, transform=transform)
     dataloader_test = DataLoader(dst_test, batch_size=batch_size, num_workers=8, collate_fn=train_collate)
@@ -74,7 +81,6 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
         ckp = torch.load(os.path.join(checkPoint, '%08d_optimizer.pth' % (checkPoint_start)))
         best_t = ckp['best_t']
         print('best_t:', best_t)
-    labelstrs = []
     allnames = []
     global_feats = []
     with torch.no_grad():
@@ -82,31 +88,22 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
         for data in tqdm(dataloader_test):
             images, names = data
             images = images.cuda()
-            global_feat, local_feat, outs = model(images)
+            global_feat, _, _ = model(images)
             global_feats.append(global_feat)
-            for names:
+            for name in names:
                 allnames.append(name)
         all_global_feat = torch.cat(global_feats)
 
         dist_global = euclidean_dist(all_global_feat, all_global_feat)
 
-        dist_global_normal = dist_global[::2, ::2]
-        dist_global_flipped = dist_global[1::2, 1::2]
+        dist_global_org = dist_global[::2, ::2]
+        dist_global_flp = dist_global[1::2, 1::2]
         dist_global_avg = (dist_global[::2, ::2] + dist_global[1::2, 1::2])/2
-        # pd.DataFrame(dist_global_normal.cpu().numpy()).to_csv('dist_global_normal.csv', index=False)
-        # pd.DataFrame(dist_global_flipped.cpu().numpy()).to_csv('dist_global_flipped.csv', index=False)
-        pd.DataFrame(dist_global_avg.cpu().numpy()).to_csv('dist_global_avg.csv', index=False)
 
-        df = dist_global_avg.cpu().numpy()
-        top20 = df.argsort()[-20:][::-1]
-        top20 = top20.reshape(-1, 20)
-        top20 = pd.DataFrame(top20)
-        top20 = top20.applymap(lambda x: allnames[x])
-        ipdb.set_trace()
-        test_imgs = sample_submission.iloc[:, 0].tolist()
-        top20 = top20[top20[0].isin(test_imgs)] 
+        get_df_top20(dist_global_org, test_imgs, allnames).to_csv(f'submission_{model_name}_sub_fold{fold_index}_org.csv', header=False, index=False)
+        get_df_top20(dist_global_flp, test_imgs, allnames).to_csv(f'submission_{model_name}_sub_fold{fold_index}_flp.csv', header=False, index=False)
+        get_df_top20(dist_global_avg, test_imgs, allnames).to_csv(f'submission_{model_name}_sub_fold{fold_index}_avg.csv', header=False, index=False)
 
-        top20.to_csv('submission_{}_sub_fold{}.csv'.format(model_name, fold_index), header=False, index=False)
 
 if __name__ == '__main__':
     checkPoint_start = 3600
