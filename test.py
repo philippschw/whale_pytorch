@@ -11,6 +11,7 @@ import shutil
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 num_TTA = 2
 
+import ipdb
 
 def train_collate(batch):
 
@@ -78,7 +79,8 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
         for data in tqdm(dataloader_test):
             images, names = data
             images = images.cuda()
-            _, _, outs = model(images)
+            global_feat, local_feat, outs = model(images)
+            ipdb.set_trace()
             outs = torch.sigmoid(outs)
             outs_zero = (outs[::2, :2233] + outs[1::2, 2233:])/2
             outs = outs_zero
