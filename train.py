@@ -305,11 +305,11 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
 if __name__ == '__main__':
     if 1:
         os.environ['CUDA_VISIBLE_DEVICES'] = '0' #'0,1,2,3,5'
-        freeze = True
+        freeze = False
         model_name = 'se_resnet50'
-        fold_index = 1
-        min_num_class = 1
-        checkPoint_start = 40600
+        fold_index = 2
+        min_num_class = 4
+        checkPoint_start = 0
         lr = 3e-4
         batch_size = 6
         print(5005%batch_size)
