@@ -55,7 +55,7 @@ def transform(image, mask):
 
 def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
     names_test = os.listdir('./WC_input/test')
-    batch_size = 16
+    batch_size = 404
     dst_test = WhaleTestDataset(names_test, mode='test', transform=transform)
     dataloader_test = DataLoader(dst_test, batch_size=batch_size, num_workers=8, collate_fn=train_collate)
     label_id = dst_test.labels_dict
@@ -80,6 +80,8 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
             images, names = data
             images = images.cuda()
             global_feat, local_feat, outs = model(images)
+            dist_global = euclidean_dist(global_feat, global_feat)
+            pd.DataFrame(dist_global.cpu().numpy()).to_csv('dist_global.csv', index=False)
             ipdb.set_trace()
             outs = torch.sigmoid(outs)
             outs_zero = (outs[::2, :2233] + outs[1::2, 2233:])/2
