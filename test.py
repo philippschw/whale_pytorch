@@ -109,7 +109,7 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
 
         df = dist_global_avg.cpu().numpy()
         top20 = df.argsort()[-20:][::-1]
-        top20 = top20.reshape(
+        top20 = top20.reshape(-1, 20)
         top20 = pd.DataFrame(top20)
         top20 = top20.applymap(lambda x: allnames[x])
         sample_submission = pd.read_csv('./WC_input/sample_submision.csv')
