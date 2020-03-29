@@ -28,7 +28,6 @@ class WhaleDataset(Dataset):
         self.pairs = 2
         self.names = names
         self.labels = labels
-        print ('WhaleDataset 0: self.labels', self.labels)
         self.mode = mode
         self.transform_train = transform_train
         self.labels_dict = self.load_labels()
@@ -42,14 +41,12 @@ class WhaleDataset(Dataset):
             else:
                 labels.append(label)
         self.labels = labels
-        print ('WhaleDataset 2: self.labels', self.labels)
 
         if mode in ['train', 'valid']:
             self.dict_train = self.balance_train()
             # self.labels = list(self.dict_train.keys())
             self.labels = [k for k in self.dict_train.keys()
                             if len(self.dict_train[k]) >= min_num_classes]
-            print ('WhaleDataset 3: self.labels', self.labels)
 
     def load_mask(self):
         print('loading mask...')
@@ -154,7 +151,7 @@ class WhaleTestDataset(Dataset):
         self.labels_dict = self.load_labels()
         self.rle_masks = self.load_mask()
         self.transform = transform
-        print ('WhaleTestDataset: self.labels', self.labels)
+        # print ('WhaleTestDataset: self.labels', self.labels)
 
     def __len__(self):
         return len(self.names)
@@ -222,8 +219,8 @@ class WhaleTestDataset(Dataset):
         elif self.mode in ['valid', 'train']:
             name = self.names[index]
             # print ('self.labels_dict', self.labels_dict)
-            print (self.labels[index])
-            print (type(self.labels[index]))
+            # print (self.labels[index])
+            # print (type(self.labels[index]))
             label = self.labels_dict[self.labels[index]]
             image = self.get_image(name, self.transform)
             return image, label, name

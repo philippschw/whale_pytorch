@@ -185,10 +185,10 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
     log.write(' start_time :{} \n'.format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
     log.write(' batch_size :{} \n'.format(batch_size))
     # Image,Id
-    data_train = pd.read_csv('./WC_input/train_split_{}.csv'.format(fold_index))
+    data_train = pd.read_csv('./WC_input/train_split_{}.csv'.format(fold_index), dtype='object')
     names_train = data_train['Image'].tolist()
     labels_train = data_train['Id'].tolist()
-    data_valid = pd.read_csv('./WC_input/valid_split_{}.csv'.format(fold_index))
+    data_valid = pd.read_csv('./WC_input/valid_split_{}.csv'.format(fold_index), dtype='object')
     names_valid = data_valid['Image'].tolist()
     labels_valid = data_valid['Id'].tolist()
     num_data = len(names_train)
