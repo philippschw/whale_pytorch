@@ -216,6 +216,8 @@ class WhaleTestDataset(Dataset):
             return image, name
         elif self.mode in ['valid', 'train']:
             name = self.names[index]
+            print ('self.labels_dict', self.labels_dict)
+            print ('self.labels', self.labels)
             print (self.labels[index])
             print (type(self.labels[index]))
             label = self.labels_dict[self.labels[index]]
