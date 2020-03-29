@@ -54,10 +54,11 @@ def transform(image, mask):
 
 
 def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
-    names_test = os.listdir('./WC_input/data')
+    mode = 'data'
+    names_test = os.listdir(f'./WC_input/{mode}')
     sample_submission = pd.read_csv('./WC_input/sample_submission.csv')
     batch_size = 64
-    dst_test = WhaleTestDataset(names_test, mode='test', transform=transform)
+    dst_test = WhaleTestDataset(names_test, mode=mode, transform=transform)
     dataloader_test = DataLoader(dst_test, batch_size=batch_size, num_workers=8, collate_fn=train_collate)
     label_id = dst_test.labels_dict
     id_label = {v:k for k, v in label_id.items()}
