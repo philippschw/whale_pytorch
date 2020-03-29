@@ -55,7 +55,7 @@ def transform(image, mask):
 
 def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
     names_test = os.listdir('./WC_input/test')
-    batch_size = 404
+    batch_size = 12
     dst_test = WhaleTestDataset(names_test, mode='test', transform=transform)
     dataloader_test = DataLoader(dst_test, batch_size=batch_size, num_workers=8, collate_fn=train_collate)
     label_id = dst_test.labels_dict
@@ -74,15 +74,14 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
         print('best_t:', best_t)
     labelstrs = []
     allnames = []
+    global_feats = []
     with torch.no_grad():
         model.eval()
         for data in tqdm(dataloader_test):
             images, names = data
             images = images.cuda()
             global_feat, local_feat, outs = model(images)
-            dist_global = euclidean_dist(global_feat, global_feat)
-            pd.DataFrame(dist_global.cpu().numpy()).to_csv('dist_global.csv', index=False)
-            ipdb.set_trace()
+            global_feats.append(global_feat)
             outs = torch.sigmoid(outs)
             outs_zero = (outs[::2, :2233] + outs[1::2, 2233:])/2
             outs = outs_zero
@@ -97,6 +96,10 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
                 str_top5 = str_top5[:-1]
                 allnames.append(name)
                 labelstrs.append(str_top5)
+        ipdb.set_trace()
+        all_global_feat = torch.cat(global_feats)
+        dist_global = euclidean_dist(all_global_feat, all_global_feat)
+        pd.DataFrame(dist_global.cpu().numpy()).to_csv('dist_global.csv', index=False)
     pd.DataFrame({'Image': allnames,'Id': labelstrs}).to_csv('test_{}_sub_fold{}.csv'.format(model_name, fold_index), index=None)
 
 if __name__ == '__main__':
