@@ -109,7 +109,6 @@ class WhaleDataset(Dataset):
         x0, y0, x1, y1 = [e if e > 0 else 0 for e in self.bbox_dict[name]]
         if mask is None:
             mask = np.zeros_like(image[:,:,0])
-        ifx0, y0, x1, y1
         image = image[int(y0):int(y1), int(x0):int(x1)]
         mask = mask[int(y0):int(y1), int(x0):int(x1)]
         print (name)
