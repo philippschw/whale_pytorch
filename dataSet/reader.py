@@ -110,6 +110,9 @@ class WhaleDataset(Dataset):
             mask = np.zeros_like(image[:,:,0])
         image = image[int(y0):int(y1), int(x0):int(x1)]
         mask = mask[int(y0):int(y1), int(x0):int(x1)]
+        print (name)
+        print ('image.shape', image.shape)
+        print ('mask.shape', mask.shape)
         image, add_ = transform(image, mask, label)
         return image, add_
 
