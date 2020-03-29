@@ -145,36 +145,8 @@ def local_dist(x, y):
   # shape [M, N]
   dist_mat = shortest_dist(dist_mat)
   return dist_mat
-# class TripletLoss(object):
-#     """Modified from Tong Xiao's open-reid (https://github.com/Cysu/open-reid).
-#     Related Triplet Loss theory can be found in paper 'In Defense of the Triplet
-#     Loss for Person Re-Identification'."""
-#
-#     def __init__(self, margin=None):
-#         self.margin = margin
-#         if margin is not None:
-#             self.ranking_loss = nn.MarginRankingLoss(margin=margin)
-#         else:
-#             self.ranking_loss = nn.SoftMarginLoss()
-#
-#     def __call__(self, feat, labels, normalize_feature=False):
-#         # indexs = (labels != 2233).nonzero().view(-1)
-#         # global_feat = global_feat[indexs].contiguous()
-#         # labels = labels[indexs].contiguous()
-#         if normalize_feature:
-#             feat = normalize(feat, axis=-1)
-#         if len(feat.size()) == 3:
-#             dist_mat = local_dist(feat, feat)
-#         else:
-#             dist_mat = euclidean_dist(feat, feat)
-#         dist_ap, dist_an = hard_example_mining(
-#             dist_mat, labels)
-#         y = dist_an.new().resize_as_(dist_an).fill_(1)
-#         if self.margin is not None:
-#             loss = self.ranking_loss(dist_an, dist_ap, y)
-#         else:
-#             loss = self.ranking_loss(dist_an - dist_ap, y)
-#         return loss, dist_ap, dist_an
+
+
 class TripletLoss(object):
   """Modified from Tong Xiao's open-reid (https://github.com/Cysu/open-reid).
   Related Triplet Loss theory can be found in paper 'In Defense of the Triplet
@@ -204,35 +176,6 @@ class TripletLoss(object):
     return loss
 
 
-
-def normalize(x, axis=-1):
-    """Normalizing to unit length along the specified dimension.
-    Args:
-      x: pytorch Variable
-    Returns:
-      x: pytorch Variable, same shape as input
-    """
-    x = 1. * x / (torch.norm(x, 2, axis, keepdim=True).expand_as(x) + 1e-12)
-    return x
-
-
-def euclidean_dist(x, y):
-    """
-    Args:
-      x: pytorch Variable, with shape [m, d]
-      y: pytorch Variable, with shape [n, d]
-    Returns:
-      dist: pytorch Variable, with shape [m, n]
-    """
-    m, n = x.size(0), y.size(0)
-    xx = torch.pow(x, 2).sum(1, keepdim=True).expand(m, n)
-    yy = torch.pow(y, 2).sum(1, keepdim=True).expand(n, m).t()
-    dist = xx + yy
-    dist.addmm_(1, -2, x, y.t())
-    dist = dist.clamp(min=1e-12).sqrt()  # for numerical stability
-    return dist
-
-
 def batch_euclidean_dist(x, y):
     """
     Args:
@@ -256,8 +199,6 @@ def batch_euclidean_dist(x, y):
     dist.baddbmm_(1, -2, x, y.permute(0, 2, 1))
     dist = dist.clamp(min=1e-12).sqrt()  # for numerical stability
     return dist
-
-
 
 
 def batch_local_dist(x, y):
