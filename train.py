@@ -60,7 +60,7 @@ def transform_train(image, mask, label):
         if random.random() < 0.5:
             image = np.fliplr(image)
             if not label == '-1':
-                add_ += 5004
+                add_ += 2233
         image, mask = image[:,:,:3], image[:,:, 3]
     if random.random() < 0.5:
         image, mask = random_angle_rotate(image, mask, angles=(-25, 25))
@@ -135,7 +135,7 @@ def eval(model, dataLoader_valid):
             # feature, local_feat, results = data_parallel(model, images)
             model.getLoss(feature[::2], local_feat[::2], results[::2], labels)
             results = torch.sigmoid(results)
-            results_zeros = (results[::2, :5004] + results[1::2, 5004:])/2
+            results_zeros = (results[::2, :2233] + results[1::2, 2233:])/2
             all_results.append(results_zeros)
             all_labels.append(labels)
             b = len(labels)
@@ -148,7 +148,7 @@ def eval(model, dataLoader_valid):
             ts = np.linspace(0.1, 0.9, 9)
             for t in ts:
                 results_t = torch.cat([all_results, torch.ones_like(all_results[:, :1]).float().cuda() * t], 1)
-                all_labels[all_labels == 5004 * 2] = 5004
+                all_labels[all_labels == 2233 * 2] = 2233
                 top1_, top5_ = accuracy(results_t, all_labels)
                 map5_ = mapk(all_labels, results_t, k=5)
                 map5s.append(map5_)
@@ -164,7 +164,7 @@ def eval(model, dataLoader_valid):
         return valid_loss, top1, top5, map5, best_t
 
 def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10, checkPoint_start=0, lr=3e-4, batch_size=36):
-    num_classes = 5004 * 2
+    num_classes = 2233 * 2
     model = model_whale(num_classes=num_classes, inchannels=4, model_name=model_name).cuda()
     i = 0
     iter_smooth = 50
@@ -306,12 +306,12 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
 if __name__ == '__main__':
     if 1:
         os.environ['CUDA_VISIBLE_DEVICES'] = '0' #'0,1,2,3,5'
-        freeze = False
+        freeze = True
         model_name = 'se_resnet50'
         fold_index = 1
-        min_num_class = 5
-        checkPoint_start = 0
+        min_num_class = 1
+        checkPoint_start = 40600
         lr = 3e-4
-        batch_size = 10
+        batch_size = 6
         print(5005%batch_size)
         train(freeze, fold_index, model_name, min_num_class, checkPoint_start, lr, batch_size)
