@@ -84,20 +84,8 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
             images = images.cuda()
             global_feat, local_feat, outs = model(images)
             global_feats.append(global_feat)
-            outs = torch.sigmoid(outs)
-            outs_zero = (outs[::2, :2233] + outs[1::2, 2233:])/2
-            outs = outs_zero
-            for out, name in zip(outs, names):
-                out = torch.cat([out, torch.ones(1).cuda()*best_t], 0)
-                out = out.data.cpu().numpy()
-                np.save(os.path.join(npy_dir, '{}.npy'.format(name)), out)
-                top5 = out.argsort()[-5:][::-1]
-                str_top5 = ''
-                for t in top5:
-                    str_top5 += '{} '.format(id_label[t])
-                str_top5 = str_top5[:-1]
+            for names:
                 allnames.append(name)
-                labelstrs.append(str_top5)
         all_global_feat = torch.cat(global_feats)
 
         dist_global = euclidean_dist(all_global_feat, all_global_feat)
@@ -114,13 +102,11 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
         top20 = top20.reshape(-1, 20)
         top20 = pd.DataFrame(top20)
         top20 = top20.applymap(lambda x: allnames[x])
-        
+        ipdb.set_trace()
         test_imgs = sample_submission.iloc[:, 0].tolist()
         top20 = top20[top20[0].isin(test_imgs)] 
 
         top20.to_csv('submission_{}_sub_fold{}.csv'.format(model_name, fold_index), header=False, index=False)
-
-    pd.DataFrame({'Image': allnames,'Id': labelstrs}).to_csv('test_{}_sub_fold{}.csv'.format(model_name, fold_index), index=None)
 
 if __name__ == '__main__':
     checkPoint_start = 3600
