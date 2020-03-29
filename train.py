@@ -193,12 +193,12 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
     labels_valid = data_valid['Id'].tolist()
     num_data = len(names_train)
     dst_train = WhaleDataset(names_train, labels_train,mode='train',transform_train=transform_train, min_num_classes=min_num_class)
-    dataloader_train = DataLoader(dst_train, shuffle=True, drop_last=True, batch_size=batch_size, num_workers=1,
+    dataloader_train = DataLoader(dst_train, shuffle=True, drop_last=True, batch_size=batch_size, num_workers=12,
                                  collate_fn=train_collate)
     print(dst_train.__len__())
     dst_valid = WhaleTestDataset(names_valid, labels_valid, mode='valid',transform=transform_valid)
     dataloader_valid = DataLoader(dst_valid, shuffle=False, batch_size=batch_size * 2,
-                                 num_workers=1,
+                                 num_workers=8,
                                   collate_fn=valid_collate)
     train_loss = 0.0
     valid_loss = 0.0
@@ -308,12 +308,12 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
 if __name__ == '__main__':
     if 1:
         os.environ['CUDA_VISIBLE_DEVICES'] = '0' #'0,1,2,3,5'
-        freeze = False
+        freeze = True
         model_name = 'se_resnet50'
         fold_index = 2
-        min_num_class = 4
-        checkPoint_start = 0
+        min_num_class = 1
+        checkPoint_start = 3000
         lr = 3e-4
-        batch_size = 6
+        batch_size = 10
         print(5005%batch_size)
         train(freeze, fold_index, model_name, min_num_class, checkPoint_start, lr, batch_size)
