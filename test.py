@@ -96,7 +96,7 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
     pd.DataFrame({'Image': allnames,'Id': labelstrs}).to_csv('test_{}_sub_fold{}.csv'.format(model_name, fold_index), index=None)
 
 if __name__ == '__main__':
-    checkPoint_start = 41600
+    checkPoint_start = 52800
     fold_index = 1
     model_name = 'se_resnet50'
     test(checkPoint_start, fold_index, model_name)

@@ -8,7 +8,6 @@ import math
 import cv2
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
-import ipdb
 
 BASE_SIZE = 256
 def do_length_decode(rle, H=192, W=384, fill_value=255):
