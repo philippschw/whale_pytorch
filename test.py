@@ -69,7 +69,7 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
     dataloader_test = DataLoader(dst_test, batch_size=batch_size, num_workers=8, collate_fn=train_collate)
     label_id = dst_test.labels_dict
     id_label = {v:k for k, v in label_id.items()}
-    id_label[2233] = '-1'
+    # id_label[2233] = '-1'
     model = model_whale(num_classes=2233 * 2, inchannels=4, model_name=model_name).cuda()
     resultDir = './WC_result/{}_{}'.format(model_name, fold_index)
     checkPoint = os.path.join(resultDir, 'checkpoint')
@@ -98,15 +98,15 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
 
         dist_global_org = dist_global[::2, ::2]
         dist_global_flp = dist_global[1::2, 1::2]
-        dist_global_avg = (dist_global[::2, ::2] + dist_global[1::2, 1::2])/2
+        dist_global_min = np.minimum(dist_global[::2, ::2], dist_global[1::2, 1::2])
 
         get_df_top20(dist_global_org, test_imgs, allnames).to_csv(f'submission_{model_name}_sub_fold{fold_index}_org.csv', header=False, index=False)
         get_df_top20(dist_global_flp, test_imgs, allnames).to_csv(f'submission_{model_name}_sub_fold{fold_index}_flp.csv', header=False, index=False)
-        get_df_top20(dist_global_avg, test_imgs, allnames).to_csv(f'submission_{model_name}_sub_fold{fold_index}_avg.csv', header=False, index=False)
+        get_df_top20(dist_global_min, test_imgs, allnames).to_csv(f'submission_{model_name}_sub_fold{fold_index}_avg.csv', header=False, index=False)
 
 
 if __name__ == '__main__':
-    checkPoint_start = 3600
+    checkPoint_start = 11800
     fold_index = 2
     model_name = 'se_resnet50'
     test(checkPoint_start, fold_index, model_name)
