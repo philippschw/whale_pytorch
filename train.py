@@ -175,7 +175,7 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr,  betas=(0.9, 0.99), weight_decay=0.0002)
     # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0002)
-    resultDir = './WC_result/{}_{}'.format(model_name, fold_index)
+    resultDir = './WC_Cresult/{}_{}'.format(model_name, fold_index)
     ImageDir = resultDir + '/image'
     checkPoint = os.path.join(resultDir, 'checkpoint')
     os.makedirs(checkPoint, exist_ok=True)
@@ -185,10 +185,10 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
     log.write(' start_time :{} \n'.format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
     log.write(' batch_size :{} \n'.format(batch_size))
     # Image,Id
-    data_train = pd.read_csv('./WC_input/train_split_{}.csv'.format(fold_index), dtype='object')
+    data_train = pd.read_csv('./WC_Cinput/train_split_{}.csv'.format(fold_index), dtype='object')
     names_train = data_train['Image'].tolist()
     labels_train = data_train['Id'].tolist()
-    data_valid = pd.read_csv('./WC_input/valid_split_{}.csv'.format(fold_index), dtype='object')
+    data_valid = pd.read_csv('./WC_Cinput/valid_split_{}.csv'.format(fold_index), dtype='object')
     names_valid = data_valid['Image'].tolist()
     labels_valid = data_valid['Id'].tolist()
     num_data = len(names_train)
@@ -311,7 +311,7 @@ if __name__ == '__main__':
         freeze = False
         model_name = 'se_resnet50'
         fold_index = 2
-        min_num_class = 1
+        min_num_class = 5
         checkPoint_start = 0
         lr = 3e-4
         batch_size = 12
