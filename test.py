@@ -67,9 +67,6 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
     batch_size = 60
     dst_test = WhaleTestDataset(names_test, mode=mode, transform=transform)
     dataloader_test = DataLoader(dst_test, batch_size=batch_size, num_workers=8, collate_fn=train_collate)
-    label_id = dst_test.labels_dict
-    id_label = {v:k for k, v in label_id.items()}
-    # id_label[2233] = '-1'
     model = model_whale(num_classes=2233 * 2, inchannels=4, model_name=model_name).cuda()
     resultDir = './WC_Cresult/{}_{}'.format(model_name, fold_index)
     checkPoint = os.path.join(resultDir, 'checkpoint')

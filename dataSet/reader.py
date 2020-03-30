@@ -78,9 +78,6 @@ class WhaleDataset(Dataset):
         dict_label = {}
         id = 0
         for name in labelName:
-            if name == '-1':
-                dict_label[name] = 2233 * 2
-                continue
             dict_label[name] = id
             id += 1
         return dict_label
@@ -126,9 +123,9 @@ class WhaleDataset(Dataset):
             positive_name = names[0]
         else:
             anchor_name, positive_name = random.sample(names, 2)
-        negative_label = random.choice(list(set(self.labels) ^ set([label, '-1'])))
+        negative_label = random.choice(list(set(self.labels)))
         negative_name = random.choice(self.dict_train[negative_label])
-        negative_label2 = '-1'
+        negative_label2 = random.choice(list(set(self.labels)))
         negative_name2 = random.choice(self.dict_train[negative_label2])
 
         anchor_image, anchor_add = self.get_image(anchor_name, self.transform_train, label)
@@ -179,9 +176,6 @@ class WhaleTestDataset(Dataset):
         dict_label = {}
         id = 0
         for name in labelName:
-            if name == '-1':
-                dict_label[name] = 2233 * 2
-                continue
             dict_label[name] = id
             id += 1
         return dict_label

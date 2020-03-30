@@ -58,8 +58,6 @@ def transform_train(image, mask, label):
     if 1:
         if random.random() < 0.5:
             image = np.fliplr(image)
-            if not label == '-1':
-                add_ += 2233
         image, mask = image[:,:,:3], image[:,:, 3]
     if random.random() < 0.5:
         image, mask = random_angle_rotate(image, mask, angles=(-25, 25))
