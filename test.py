@@ -102,7 +102,7 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
 
         get_df_top20(dist_global_org, test_imgs, allnames).to_csv(f'submission_{model_name}_sub_fold{fold_index}_org.csv', header=False, index=False)
         get_df_top20(dist_global_flp, test_imgs, allnames).to_csv(f'submission_{model_name}_sub_fold{fold_index}_flp.csv', header=False, index=False)
-        get_df_top20(dist_global_min, test_imgs, allnames).to_csv(f'submission_{model_name}_sub_fold{fold_index}_avg.csv', header=False, index=False)
+        get_df_top20(dist_global_min, test_imgs, allnames).to_csv(f'submission_{model_name}_sub_fold{fold_index}_min.csv', header=False, index=False)
 
 
 if __name__ == '__main__':
