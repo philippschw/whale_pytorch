@@ -8,12 +8,15 @@ __pycache__/
 
 # Tensorflow Models
 *.hdf5
+bboxs/cropping.model
 
 # input
 input/
 result/
 WC_input/
 WC_result/
+WC_Cinput/
+WC_Cresult/
 
 # Distribution / packaging
 .Python
