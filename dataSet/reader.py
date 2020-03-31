@@ -124,7 +124,13 @@ class WhaleDataset(Dataset):
         else:
             anchor_name, positive_name = random.sample(names, 2)
         negative_label = random.choice(list(set(self.labels)))
-        negative_name = random.choice(self.dict_train[negative_label])
+
+        negative_name = anchor_name
+        while anchor_name == negative_name:
+            negative_name = random.choice(self.dict_train[negative_label])
+
+        assert anchor_name != negative_name
+
         negative_label2 = random.choice(list(set(self.labels)))
         negative_name2 = random.choice(self.dict_train[negative_label2])
 
@@ -133,7 +139,6 @@ class WhaleDataset(Dataset):
         negative_image,  negative_add = self.get_image(negative_name, self.transform_train, negative_label)
         negative_image2, negative_add2 = self.get_image(negative_name2, self.transform_train, negative_label2)
 
-        assert anchor_name != negative_name
         return [anchor_image, positive_image, negative_image, negative_image2], \
                [self.labels_dict[label] + anchor_add, self.labels_dict[label] + positive_add, self.labels_dict[negative_label] + negative_add, self.labels_dict[negative_label2] + negative_add2]
 
