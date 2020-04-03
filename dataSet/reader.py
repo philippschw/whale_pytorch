@@ -105,12 +105,12 @@ class WhaleDataset(Dataset):
             mask = cv2.resize(mask, image.shape[:2][::-1])
         except:
             mask = cv2.imread('./WC_input/masks/' + name, cv2.IMREAD_GRAYSCALE)
-        # x0, y0, x1, y1 = self.bbox_dict[name]
+        x0, y0, x1, y1 = self.bbox_dict[name]
         # x0, y0, x1, y1 = [e if e > 0 else 0 for e in self.bbox_dict[name]]
-        # if mask is None:
-        #     mask = np.zeros_like(image[:,:,0])
-        # image = image[int(y0):int(y1), int(x0):int(x1)]
-        # mask = mask[int(y0):int(y1), int(x0):int(x1)]
+        if mask is None:
+            mask = np.zeros_like(image[:,:,0])
+        image = image[int(y0):int(y1), int(x0):int(x1)]
+        mask = mask[int(y0):int(y1), int(x0):int(x1)]
         # print (name)
         # print ('image.shape', image.shape)
         # print ('mask.shape', mask.shape)
@@ -165,10 +165,10 @@ class WhaleTestDataset(Dataset):
             mask = cv2.imread('./WC_input/masks/' + name, cv2.IMREAD_GRAYSCALE)
         if mask is None:
             mask = np.zeros_like(image[:, :, 0])
-        # x0, y0, x1, y1 = self.bbox_dict[name]
-        # x0, y0, x1, y1 = [e if e > 0 else 0 for e in self.bbox_dict[name]]
-        # image = image[int(y0):int(y1), int(x0):int(x1)]
-        # mask = mask[int(y0):int(y1), int(x0):int(x1)]
+        x0, y0, x1, y1 = self.bbox_dict[name]
+        x0, y0, x1, y1 = [e if e > 0 else 0 for e in self.bbox_dict[name]]
+        image = image[int(y0):int(y1), int(x0):int(x1)]
+        mask = mask[int(y0):int(y1), int(x0):int(x1)]
         image = transform(image, mask)
         return image
 
