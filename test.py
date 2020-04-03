@@ -64,7 +64,7 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
     names_test = os.listdir(f'./WC_input/{mode}')
     sample_submission = pd.read_csv('./WC_input/sample_submission.csv', header=None)
     test_imgs = sample_submission.iloc[:, 0].tolist()
-    batch_size = 60
+    batch_size = 80
     dst_test = WhaleTestDataset(names_test, mode=mode, transform=transform)
     dataloader_test = DataLoader(dst_test, batch_size=batch_size, num_workers=8, collate_fn=train_collate)
     label_id = dst_test.labels_dict
@@ -100,14 +100,17 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
         dist_global_flp = dist_global[1::2, 1::2]
         dist_global_min = np.minimum(dist_global[::2, ::2], dist_global[1::2, 1::2])
 
-        get_df_top20(dist_global_org, test_imgs, allnames).to_csv(f'submission_{model_name}_sub_fold{fold_index}_org.csv', header=False, index=False)
-        get_df_top20(dist_global_flp, test_imgs, allnames).to_csv(f'submission_{model_name}_sub_fold{fold_index}_flp.csv', header=False, index=False)
-        get_df_top20(dist_global_min, test_imgs, allnames).to_csv(f'submission_{model_name}_sub_fold{fold_index}_min.csv', header=False, index=False)
+        get_df_top20(dist_global_org, test_imgs, allnames).to_csv(os.path.join(npy_dir, f'submission_{model_name}_sub_fold{fold_index}_org.csv'),
+                                                                  header=False, index=False)
+        get_df_top20(dist_global_flp, test_imgs, allnames).to_csv(os.path.join(npy_dir, f'submission_{model_name}_sub_fold{fold_index}_flp.csv'),
+                                                                  header=False, index=False)
+        get_df_top20(dist_global_min, test_imgs, allnames).to_csv(os.path.join(npy_dir, f'submission_{model_name}_sub_fold{fold_index}_min.csv'),
+                                                                  header=False, index=False)
 
 
 if __name__ == '__main__':
-    checkPoint_start = 11800
-    fold_index = 2
+    checkPoint_start = 17200
+    fold_index = 3
     model_name = 'se_resnet50'
     test(checkPoint_start, fold_index, model_name)
 
