@@ -223,9 +223,9 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
         i = checkPoint_start
         epoch = ckp['epoch']
     log.write(
-            ' rate     iter   epoch  | valid   top@1    top@5    map@5  | '
-            'train    top@1    top@5    map@5 |'
-            ' batch    top@1    top@5    map@5 |  time          \n')
+            ' rate  iter   epoch  | valid  | '
+            'train  |'
+            ' batch |  time       \n')
     log.write(
             '---------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n')
     start = timer()
@@ -240,8 +240,7 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
                 valid_loss = eval(model, dataloader_valid)
                 print('\r', end='', flush=True)
 
-                log.write(
-                    f'{lr}, {i / 1000}, {epoch}, {valid_loss}, {train_loss}, {batch_loss}, {time_to_str((timer() - start) / 60)}'
+                log.write(f'{lr}, {i / 1000}, {epoch}, {valid_loss}, {train_loss}, {batch_loss}, {time_to_str((timer() - start) / 60)}')
                 time.sleep(0.01)
 
             if i % iter_save == 0 and not i == checkPoint_start:
