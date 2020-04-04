@@ -194,12 +194,12 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
     labels_valid = data_valid['Id'].tolist()
     num_data = len(names_train)
     dst_train = WhaleDataset(names_train, labels_train,mode='train',transform_train=transform_train, min_num_classes=min_num_class)
-    dataloader_train = DataLoader(dst_train, shuffle=True, drop_last=True, batch_size=batch_size, num_workers=12,
+    dataloader_train = DataLoader(dst_train, shuffle=True, drop_last=True, batch_size=batch_size, num_workers=0#12,
                                  collate_fn=train_collate)
     print(dst_train.__len__())
     dst_valid = WhaleTestDataset(names_valid, labels_valid, mode='valid',transform=transform_valid)
     dataloader_valid = DataLoader(dst_valid, shuffle=False, batch_size=batch_size * 2,
-                                 num_workers=8,
+                                 num_workers=0#8,
                                   collate_fn=valid_collate)
     train_loss = 0.0
     valid_loss = 0.0
