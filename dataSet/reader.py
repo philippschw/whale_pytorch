@@ -22,6 +22,20 @@ def do_length_decode(rle, H=192, W=384, fill_value=255):
     mask = mask.reshape(W, H).T   # H, W need to swap as transposing.
     return mask
 
+def add_margin(x0,y0,x1,y1):
+    crop_margin = 0.10
+    dx = x1-x0
+    dy = y1-y0
+    x0 = x0-dx*crop_margin
+    x1 = x1+dx*crop_margin+1
+    y0 = y0-dy*crop_margin
+    y1 = y1+dy*crop_margin+1
+    if (x0<0): x0=0
+#     if (x1>img_shape[1]): x1=img_shape[1]
+    if (y0<0): y0=0
+#     if (y1>img_shape[0]): y1=img_shape[0]
+    return x0,y0,x1,y1
+
 class WhaleDataset(Dataset):
     def __init__(self, names, labels=None, mode='train', transform_train=None,  min_num_classes=0):
         super(WhaleDataset, self).__init__()
@@ -68,7 +82,9 @@ class WhaleDataset(Dataset):
         y1s = bbox['y1'].tolist()
         bbox_dict = {}
         for Image,x0,y0,x1,y1 in zip(Images,x0s,y0s,x1s,y1s):
-            bbox_dict[Image] = [x0, y0, x1, y1]
+            x0,y0,x1,y1 = add_margin(x0,y0,x1,y1)
+            bbox_dict[Image] = [x0, y0, x1, y1]     
+
         return bbox_dict
 
     def load_labels(self):
