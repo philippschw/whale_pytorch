@@ -155,7 +155,7 @@ class model_whale(nn.Module):
 
 
 class model_whale_head(nn.Module):
-    def __init__(self, model_whale, inchannels=3, model_name='resnet34'):
+    def __init__(self, model_whale, inchannels=4, model_name='se_resnet50'):
         super().__init__()
         self.model_whale = model_whale(inchannels, model_name)
         # self.inchannels = inchannels
