@@ -160,8 +160,8 @@ class model_whale_head(nn.Module):
         self.model_whale = model_whale
         # self.inchannels = inchannels
         # self.model_name= inchannels
-        self.linear1 = nn.Linear(2048, 512)
-        self.linear2 = nn.Linear(512, 1)
+        self.linear1 = nn.Linear(1024, 128)
+        self.linear2 = nn.Linear(128, 1)
 
     def forward(self, x):
         global_feat, _ = self.model_whale(x)
