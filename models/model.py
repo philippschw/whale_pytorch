@@ -157,14 +157,14 @@ class model_whale(nn.Module):
 class model_whale_head(nn.Module):
     def __init__(self, model_whale, inchannels=3, model_name='resnet34'):
         super().__init__()
-        self.model_whale = model_whale
-        self.inchannels = inchannels
-        self.model_name= inchannels
+        self.model_whale = model_whale(inchannels, model_name)
+        # self.inchannels = inchannels
+        # self.model_name= inchannels
         self.linear1 = nn.Linear(2048, 512)
         self.linear2 = nn.Linear(512, 1)
 
     def forward(self, x):
-        global_feat, _ = model_whale(x, self.inchannels, self.model_name)
+        global_feat, _ = model_whale(x)
         x1, x2 = global_feat[::2, ::2], global_feat[1::2, 1::2]
         res = []
 

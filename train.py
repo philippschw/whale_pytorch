@@ -131,36 +131,36 @@ def eval(model, dataLoader_valid):
             images = images.cuda()
             labels = labels.cuda().long()
             # feature, local_feat, results = model(images)
-            feature, local_feat, results = data_parallel(model, images)
-            model.getLoss(feature[::2], local_feat[::2], results[::2], labels)
-            results = torch.sigmoid(results)
-            results_zeros = (results[::2, :2233] + results[1::2, 2233:])/2
-            all_results.append(results_zeros)
+            results = data_parallel(model, images)
+            model.getLoss(results)
+            # results = torch.sigmoid(results)
+            # results_zeros = (results[::2, :2233] + results[1::2, 2233:])/2
+            # all_results.append(results_zeros)
             all_labels.append(labels)
             b = len(labels)
-            valid_loss += model.loss.data.cpu().numpy() * b
-            index_valid += b
-        all_results = torch.cat(all_results, 0)
-        all_labels = torch.cat(all_labels, 0)
-        map5s, top1s, top5s = [], [], []
-        if 1:
-            ts = np.linspace(0.1, 0.9, 9)
-            for t in ts:
-                results_t = torch.cat([all_results, torch.ones_like(all_results[:, :1]).float().cuda() * t], 1)
-                all_labels[all_labels == 2233 * 2] = 2233
-                top1_, top5_ = accuracy(results_t, all_labels)
-                map5_ = mapk(all_labels, results_t, k=5)
-                map5s.append(map5_)
-                top1s.append(top1_)
-                top5s.append(top5_)
-            map5 = max(map5s)
-            i_max = map5s.index(map5)
-            top1 = top1s[i_max]
-            top5 = top5s[i_max]
-            best_t = ts[i_max]
+            valid_loss += model.loss.data.cpu().numpy() #* b
+        #     index_valid += b
+        # # all_results = torch.cat(all_results, 0)
+        # all_labels = torch.cat(all_labels, 0)
+        # map5s, top1s, top5s = [], [], []
+        # if 1:
+        #     ts = np.linspace(0.1, 0.9, 9)
+        #     for t in ts:
+        #         results_t = torch.cat([all_results, torch.ones_like(all_results[:, :1]).float().cuda() * t], 1)
+        #         all_labels[all_labels == 2233 * 2] = 2233
+        #         top1_, top5_ = accuracy(results_t, all_labels)
+        #         map5_ = mapk(all_labels, results_t, k=5)
+        #         map5s.append(map5_)
+        #         top1s.append(top1_)
+        #         top5s.append(top5_)
+        #     map5 = max(map5s)
+        #     i_max = map5s.index(map5)
+        #     top1 = top1s[i_max]
+        #     top5 = top5s[i_max]
+        #     best_t = ts[i_max]
 
-        valid_loss /= index_valid
-        return valid_loss, top1, top5, map5, best_t
+        # valid_loss /= index_valid
+        return valid_loss#, top1, top5, map5, best_t
 
 def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10, checkPoint_start=0, lr=3e-4, batch_size=36):
     num_classes = 2233 * 2
@@ -267,8 +267,8 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
             images = images.cuda()
             labels = labels.cuda().long()
             # global_feat, local_feat, results = model(images)
-            global_feat, local_feat, results = data_parallel(model,images)
-            model.getLoss(global_feat, local_feat, results, labels)
+            results = data_parallel(model,images)
+            model.getLoss(results)
             batch_loss = model.loss
 
             optimizer.zero_grad()
@@ -282,24 +282,27 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
             batch_loss = batch_loss.data.cpu().numpy()
             sum += 1
             train_loss_sum += batch_loss
-            train_top1_sum += top1_batch
-            train_map5_sum += map5_batch
+            # train_top1_sum += top1_batch
+            # train_map5_sum += map5_batch
             if (i + 1) % iter_smooth == 0:
                 train_loss = train_loss_sum/sum
-                top1_train = train_top1_sum/sum
-                map5_train = train_map5_sum/sum
-                train_loss_sum = 0
-                train_top1_sum = 0
-                train_map5_sum = 0
+                # top1_train = train_top1_sum/sum
+                # map5_train = train_map5_sum/sum
+                # train_loss_sum = 0
+                # train_top1_sum = 0
+                # train_map5_sum = 0
                 sum = 0
 
-            print('\r%0.5f %5.2f k %5.2f  | %0.3f    %0.3f    %0.3f    %0.4f    %0.4f | %0.3f    %0.3f    %0.3f | %0.3f     %0.3f    %0.3f | %s  %d %d' % ( \
+            print(
                     lr, i / 1000, epoch,
-                    valid_loss, top1, top5,map5,best_t,
-                    train_loss, top1_train, map5_train,
-                    batch_loss, top1_batch, map5_batch,
-                    time_to_str((timer() - start) / 60), checkPoint_start, i)
-                , end='', flush=True)
+                    valid_loss,#, top1, top5,map5,best_t,
+                    train_loss,
+                    batch_loss,
+                    time_to_str((timer() - start) / 60),
+                    checkPoint_start,
+                    i,
+                    end='',
+                    flush=True)
             i += 1
            
         pass
