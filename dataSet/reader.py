@@ -23,7 +23,7 @@ def do_length_decode(rle, H=192, W=384, fill_value=255):
     return mask
 
 def add_margin(x0,y0,x1,y1):
-    crop_margin = 0.10
+    crop_margin = 0.05
     dx = x1-x0
     dy = y1-y0
     x0 = x0-dx*crop_margin
@@ -220,8 +220,10 @@ class WhaleTestDataset(Dataset):
         y1s = bbox['y1'].tolist()
         bbox_dict = {}
         for Image, x0, y0, x1, y1 in zip(Images, x0s, y0s, x1s, y1s):
+            x0,y0,x1,y1 = add_margin(x0,y0,x1,y1)
             bbox_dict[Image] = [x0, y0, x1, y1]
         return bbox_dict
+    
     def __getitem__(self, index):
         if self.mode in ['test', 'data']:
             name = self.names[index]
