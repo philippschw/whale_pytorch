@@ -237,18 +237,11 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
         for data in dataloader_train:
             epoch = start_epoch + (i - checkPoint_start) * 4 * batch_size/num_data
             if i % iter_valid == 0:
-                valid_loss, top1, top5, map5, best_t = \
-                    eval(model, dataloader_valid)
+                valid_loss = eval(model, dataloader_valid)
                 print('\r', end='', flush=True)
 
                 log.write(
-                    '%0.5f %5.2f k %5.2f  |'
-                    ' %0.3f    %0.3f    %0.3f    %0.4f    %0.4f | %0.3f    %0.3f    %0.3f | %0.3f     %0.3f    %0.3f | %s \n' % ( \
-                        lr, i / 1000, epoch,
-                        valid_loss, top1, top5, map5, best_t,
-                        train_loss, top1_train, map5_train,
-                        batch_loss, top1_batch, map5_batch,
-                        time_to_str((timer() - start) / 60)))
+                    f'{lr}, {i / 1000}, {epoch}, {valid_loss}, {train_loss}, {batch_loss}, {time_to_str((timer() - start) / 60)}'
                 time.sleep(0.01)
 
             if i % iter_save == 0 and not i == checkPoint_start:
