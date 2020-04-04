@@ -181,7 +181,7 @@ class model_whale_head(nn.Module):
     def getLoss(self, res):
         m = nn.Sigmoid()
         loss = nn.BCELoss()
-        return loss(m(res), 0)
+        self.loss = loss(m(res), torch.zeros(res.shape).cuda())
 
     def load_pretrain(self, pretrain_file, skip=[]):
         pretrain_state_dict = torch.load(pretrain_file)
