@@ -164,7 +164,8 @@ def eval(model, dataLoader_valid):
 
 def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10, checkPoint_start=0, lr=3e-4, batch_size=36):
     num_classes = 2233 * 2
-    model = model_whale_head(model_whale, inchannels=4, model_name=model_name).cuda()
+    encoding_model = model_whale(inchannels=4, model_name=model_name)
+    model = model_whale_head(encoding_model).cuda()
     i = 0
     iter_smooth = 50
     iter_valid = 200
