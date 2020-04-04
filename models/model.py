@@ -9,7 +9,7 @@ import torch.nn.utils.weight_norm as weightNorm
 
 
 class model_whale(nn.Module):
-    def __init__(self, num_classes=5005, inchannels=3, model_name='resnet34'):
+    def __init__(self, inchannels=3, model_name='resnet34'):
         super().__init__()
         planes = 512
         self.model_name = model_name
@@ -67,9 +67,10 @@ class model_whale(nn.Module):
         self.bottleneck_g.bias.requires_grad_(False)  # no shift
         # self.archead = Arcface(embedding_size=planes, classnum=num_classes, s=64.0)
         #
-        self.fc = nn.Linear(planes, num_classes)
-        init.normal_(self.fc.weight, std=0.001)
-        init.constant_(self.fc.bias, 0)
+        # self.fc = nn.Linear(planes, 1)
+        # init.normal_(self.fc.weight, std=0.001)
+        # init.constant_(self.fc.bias, 0)
+        # self.sigmoid = nn.Sigmoid()
 
     def forward(self, x, label=None):
         feat = self.basemodel(x)
@@ -86,8 +87,8 @@ class model_whale(nn.Module):
         local_feat = local_feat.squeeze(-1).permute(0, 2, 1)
         local_feat = l2_norm(local_feat, axis=-1)
 
-        out = self.fc(global_feat) * 16
-        return global_feat, local_feat, out
+        # out = self.fc(euclidean_dist()) * 16
+        return global_feat, local_feat#, out
 
     def freeze_bn(self):
         for m in self.named_modules():
@@ -153,15 +154,34 @@ class model_whale(nn.Module):
             for param in self.basemodel.cell_17.parameters(): param.requires_grad = True
 
 
+class model_whale_head(nn.Module):
+    def __init__(self, model_whale, inchannels=3, model_name='resnet34'):
+        super().__init__()
+        self.model_whale = model_whale
+        self.inchannels = inchannels
+        self.model_name= inchannels
+        self.linear1 = nn.Linear(2048, 512)
+        self.linear2 = nn.Linear(512, 1)
 
-    def getLoss(self, global_feat, local_feat, results,labels):
-        triple_loss = global_loss(TripletLoss(margin=0.3), global_feat, labels)[0] + \
-                      local_loss(TripletLoss(margin=0.3), local_feat, labels)[0]
-        loss_ = sigmoid_loss(results, labels, topk=30)
+    def forward(self, x):
+        global_feat, _ = model_whale(x, self.inchannels, self.model_name)
+        x1, x2 = global_feat[::2, ::2], global_feat[1::2, 1::2]
+        res = []
 
-        self.loss = triple_loss + loss_
+        x1 = self.linear1(x1)
+        x2 = self.linear1(x2)
 
+        res.append(F.relu(x1))
+        res.append(F.relu(x2))
 
+        res = torch.abs(res[1] - res[0])
+        res = self.linear2(res)
+        return res
+
+    def getLoss(self, res):
+        m = nn.Sigmoid()
+        loss = nn.BCELoss()
+        return loss(m(res), 0)
 
     def load_pretrain(self, pretrain_file, skip=[]):
         pretrain_state_dict = torch.load(pretrain_file)
