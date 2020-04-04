@@ -268,9 +268,9 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
             batch_loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0, norm_type=2)
             optimizer.step()
-            results = torch.cat([torch.sigmoid(results), torch.ones_like(results[:, :1]).float().cuda() * 0.5], 1)
-            top1_batch = accuracy(results, labels, topk=(1,))[0]
-            map5_batch = mapk(labels, results, k=5)
+            # results = torch.cat([torch.sigmoid(results), torch.ones_like(results[:, :1]).float().cuda() * 0.5], 1)
+            # top1_batch = accuracy(results, labels, topk=(1,))[0]
+            # map5_batch = mapk(labels, results, k=5)
 
             batch_loss = batch_loss.data.cpu().numpy()
             sum += 1
