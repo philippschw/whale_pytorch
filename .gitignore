@@ -8,6 +8,8 @@ __pycache__/
 
 # Tensorflow Models
 *.hdf5
+*.model
+*.h5
 bboxs/cropping.model
 bboxs/humpback-whale-identification.zip
 bboxs/test2/
