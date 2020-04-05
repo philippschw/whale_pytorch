@@ -310,9 +310,9 @@ if __name__ == '__main__':
         os.environ['CUDA_VISIBLE_DEVICES'] = '0' #'0,1,2,3,5'
         freeze = True
         model_name = 'se_resnet50'
-        fold_index = 3
+        fold_index = 5
         min_num_class = 1
-        checkPoint_start = 12800
+        checkPoint_start = 3600
         lr = 3e-4
         batch_size = 12
         print(5005%batch_size)
