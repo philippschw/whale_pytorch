@@ -8,6 +8,7 @@ from dataSet.reader import *
 from dataSet.transform import *
 import os
 import shutil
+import torch.nn.functional as F
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 num_TTA = 2
 
@@ -64,13 +65,14 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
     names_test = os.listdir(f'./WC_input/{mode}')
     sample_submission = pd.read_csv('./WC_input/sample_submission.csv', header=None)
     test_imgs = sample_submission.iloc[:, 0].tolist()
-    batch_size = 80
+    batch_size = 2
     dst_test = WhaleTestDataset(names_test, mode=mode, transform=transform)
-    dataloader_test = DataLoader(dst_test, batch_size=batch_size, num_workers=8, collate_fn=train_collate)
+    dataloader_test = DataLoader(dst_test, batch_size=batch_size, num_workers=0, collate_fn=train_collate)
     label_id = dst_test.labels_dict
     id_label = {v:k for k, v in label_id.items()}
     # id_label[2233] = '-1'
-    model = model_whale(num_classes=2233 * 2, inchannels=4, model_name=model_name).cuda()
+    encoding_model = model_whale(inchannels=4, model_name=model_name)
+    model = model_whale_head(encoding_model).cuda()
     resultDir = './WC_result/{}_{}'.format(model_name, fold_index)
     checkPoint = os.path.join(resultDir, 'checkpoint')
 
@@ -82,23 +84,19 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
         best_t = ckp['best_t']
         print('best_t:', best_t)
     allnames = []
-    global_feats = []
+    all_results = []
     with torch.no_grad():
         model.eval()
         for data in tqdm(dataloader_test):
             images, names = data
             images = images.cuda()
-            global_feat, _, _ = model(images)
-            global_feats.append(global_feat)
+            results = model(images)
+            ipdb.set_trace()
+            all_results.append(results)
             for name in names:
                 allnames.append(name)
-        all_global_feat = torch.cat(global_feats)
-
-        dist_global = euclidean_dist(all_global_feat, all_global_feat)
-
-        dist_global_org = dist_global[::2, ::2]
-        dist_global_flp = dist_global[1::2, 1::2]
-        dist_global_min = np.minimum(dist_global[::2, ::2], dist_global[1::2, 1::2])
+        all_results = torch.cat(all_results)
+                    
 
         get_df_top20(dist_global_org, test_imgs, allnames).to_csv(os.path.join(npy_dir, f'submission_{model_name}_sub_fold{fold_index}_org.csv'),
                                                                   header=False, index=False)
@@ -107,10 +105,9 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
         get_df_top20(dist_global_min, test_imgs, allnames).to_csv(os.path.join(npy_dir, f'submission_{model_name}_sub_fold{fold_index}_min.csv'),
                                                                   header=False, index=False)
 
-
 if __name__ == '__main__':
-    checkPoint_start = 17200
-    fold_index = 3
+    checkPoint_start = 5000
+    fold_index = 4
     model_name = 'se_resnet50'
     test(checkPoint_start, fold_index, model_name)
 

@@ -6,7 +6,7 @@ from models.triplet_loss import *
 from models.utils import *
 import torch.nn.utils.weight_norm as weightNorm
 
-
+import ipdb
 
 class model_whale(nn.Module):
     def __init__(self, inchannels=3, model_name='resnet34'):
@@ -160,28 +160,43 @@ class model_whale_head(nn.Module):
         self.model_whale = model_whale
         # self.inchannels = inchannels
         # self.model_name= inchannels
-        self.linear1 = nn.Linear(1024, 128)
+        self.linear1 = nn.Linear(2048, 128)
         self.linear2 = nn.Linear(128, 1)
 
     def forward(self, x):
+        # bs 100 
         global_feat, _ = self.model_whale(x)
-        x1, x2 = global_feat[::2, ::2], global_feat[1::2, 1::2]
-        res = []
+        # global_feat.shape = (400, 1028)
+        x1, x2, x3, x4  = global_feat[::4, :], global_feat[1::4, :], global_feat[2::4, :], global_feat[3::4, :]
+        
+        y1 = 1 - torch.abs(x1-x2) # 1 (100, 2048)
+        y2 = torch.abs(x1-x3) # 0 (100, 2048)
+        y3 = torch.abs(x1-x4) # 0 (100, 2048)
+        # x1.shape = (100, 2048)
+        y1 = self.linear1(y1)
+        y2 = self.linear1(y2)
+        y3= self.linear1(y3)
+        
+        y1 = F.relu(y1)
+        y2 = F.relu(y2)
+        y3 = F.relu(y3)
+        
+        y1 = self.linear2(y1)
+        y2 = self.linear2(y2)
+        y3 = self.linear2(y3)
 
-        x1 = self.linear1(x1)
-        x2 = self.linear1(x2)
-
-        res.append(F.relu(x1))
-        res.append(F.relu(x2))
-
-        res = torch.abs(res[1] - res[0])
-        res = self.linear2(res)
+        y1 = torch.sigmoid(y1)
+        y2 = torch.sigmoid(y2)
+        y3 = torch.sigmoid(y3)
+        
+        res = torch.cat([y1, y2, y3], 1)
+        # (100, 3)
+#         ipdb.set_trace()
         return res
 
     def getLoss(self, res):
-        m = nn.Sigmoid()
         loss = nn.BCELoss()
-        self.loss = loss(m(res), torch.zeros(res.shape).cuda())
+        self.loss = loss(res, torch.zeros(res.shape).cuda())
 
     def load_pretrain(self, pretrain_file, skip=[]):
         pretrain_state_dict = torch.load(pretrain_file)

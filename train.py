@@ -139,40 +139,23 @@ def eval(model, dataLoader_valid):
             all_labels.append(labels)
             b = len(labels)
             valid_loss += model.loss.data.cpu().numpy() #* b
-        #     index_valid += b
-        # # all_results = torch.cat(all_results, 0)
-        # all_labels = torch.cat(all_labels, 0)
-        # map5s, top1s, top5s = [], [], []
-        # if 1:
-        #     ts = np.linspace(0.1, 0.9, 9)
-        #     for t in ts:
-        #         results_t = torch.cat([all_results, torch.ones_like(all_results[:, :1]).float().cuda() * t], 1)
-        #         all_labels[all_labels == 2233 * 2] = 2233
-        #         top1_, top5_ = accuracy(results_t, all_labels)
-        #         map5_ = mapk(all_labels, results_t, k=5)
-        #         map5s.append(map5_)
-        #         top1s.append(top1_)
-        #         top5s.append(top5_)
-        #     map5 = max(map5s)
-        #     i_max = map5s.index(map5)
-        #     top1 = top1s[i_max]
-        #     top5 = top5s[i_max]
-        #     best_t = ts[i_max]
+            index_valid += b
 
-        # valid_loss /= index_valid
+        valid_loss /= index_valid
         return valid_loss#, top1, top5, map5, best_t
 
 def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10, checkPoint_start=0, lr=3e-4, batch_size=36):
     num_classes = 2233 * 2
     encoding_model = model_whale(inchannels=4, model_name=model_name)
+    if freeze:
+        encoding_model.freeze()
     model = model_whale_head(encoding_model).cuda()
     i = 0
     iter_smooth = 50
     iter_valid = 200
     iter_save = 200
     epoch = 0
-    if freeze:
-        model.freeze()
+
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr,  betas=(0.9, 0.99), weight_decay=0.0002)
     # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0002)
@@ -194,12 +177,12 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
     labels_valid = data_valid['Id'].tolist()
     num_data = len(names_train)
     dst_train = WhaleDataset(names_train, labels_train,mode='train',transform_train=transform_train, min_num_classes=min_num_class)
-    dataloader_train = DataLoader(dst_train, shuffle=True, drop_last=True, batch_size=batch_size, num_workers=0#12,
+    dataloader_train = DataLoader(dst_train, shuffle=True, drop_last=True, batch_size=batch_size, num_workers=12,
                                  collate_fn=train_collate)
     print(dst_train.__len__())
     dst_valid = WhaleTestDataset(names_valid, labels_valid, mode='valid',transform=transform_valid)
     dataloader_valid = DataLoader(dst_valid, shuffle=False, batch_size=batch_size * 2,
-                                 num_workers=0#8,
+                                 num_workers=8,
                                   collate_fn=valid_collate)
     train_loss = 0.0
     valid_loss = 0.0
@@ -279,23 +262,7 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
             # train_map5_sum += map5_batch
             if (i + 1) % iter_smooth == 0:
                 train_loss = train_loss_sum/sum
-                # top1_train = train_top1_sum/sum
-                # map5_train = train_map5_sum/sum
-                # train_loss_sum = 0
-                # train_top1_sum = 0
-                # train_map5_sum = 0
                 sum = 0
-
-            print(
-                    lr, i / 1000, epoch,
-                    valid_loss,#, top1, top5,map5,best_t,
-                    train_loss,
-                    batch_loss,
-                    time_to_str((timer() - start) / 60),
-                    checkPoint_start,
-                    i,
-                    end='',
-                    flush=True)
             i += 1
            
         pass
@@ -306,9 +273,9 @@ if __name__ == '__main__':
         os.environ['CUDA_VISIBLE_DEVICES'] = '0' #'0,1,2,3,5'
         freeze = True
         model_name = 'se_resnet50'
-        fold_index = 3
+        fold_index = 4
         min_num_class = 1
-        checkPoint_start = 12800
+        checkPoint_start = 0
         lr = 3e-4
         batch_size = 12
         print(5005%batch_size)
