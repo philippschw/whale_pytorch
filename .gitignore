@@ -17,6 +17,8 @@ bboxs/train.zip
 bboxs/train/
 bboxs/train2/
 
+head/*.csv
+
 # input
 input/
 result/
