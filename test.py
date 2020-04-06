@@ -66,7 +66,7 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
     test_imgs = sample_submission.iloc[:, 0].tolist()
     batch_size = 80
     dst_test = WhaleTestDataset(names_test, mode=mode, transform=transform)
-    dataloader_test = DataLoader(dst_test, batch_size=batch_size, num_workers=8, collate_fn=train_collate)
+    dataloader_test = DataLoader(dst_test, batch_size=batch_size, num_workers=0, collate_fn=train_collate)
     label_id = dst_test.labels_dict
     id_label = {v:k for k, v in label_id.items()}
     # id_label[2233] = '-1'
@@ -93,12 +93,17 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
             for name in names:
                 allnames.append(name)
         all_global_feat = torch.cat(global_feats)
-
+        
+        all_global_feat_np = all_global_feat.cpu().numpy()
+        
+        pd.DataFrame(all_global_feat_np[::2, :], index=allnames).to_csv(os.path.join(npy_dir, 'encoding_org_img.csv'), header=False)
+        pd.DataFrame(all_global_feat_np[1::2, :], index=allnames).to_csv(os.path.join(npy_dir, 'encoding_flp_img.csv'), header=False)
+        
         dist_global = euclidean_dist(all_global_feat, all_global_feat)
 
-        dist_global_org = dist_global[::2, ::2]
-        dist_global_flp = dist_global[1::2, 1::2]
-        dist_global_min = np.minimum(dist_global[::2, ::2], dist_global[1::2, 1::2])
+        dist_global_org = dist_global[::2, :]
+        dist_global_flp = dist_global[1::2, :]
+        dist_global_min = np.minimum(dist_global[::2, :], dist_global[1::2, :])
 
         get_df_top20(dist_global_org, test_imgs, allnames).to_csv(os.path.join(npy_dir, f'submission_{model_name}_sub_fold{fold_index}_org.csv'),
                                                                   header=False, index=False)
@@ -109,7 +114,7 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
 
 
 if __name__ == '__main__':
-    checkPoint_start = 6800
+    checkPoint_start = 10000
     fold_index = 5
     model_name = 'se_resnet50'
     test(checkPoint_start, fold_index, model_name)
