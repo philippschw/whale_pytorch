@@ -7,14 +7,19 @@ from reader import *
 from models import *
 import torch
 import time
-from utils import *
 from torch.nn.parallel.data_parallel import data_parallel
+import ipdb
 
 def time_to_str(t):
     t  = int(t)
     hr = t//60
     min = t%60
     return '%2d hr %02d min'%(hr,min)
+
+def adjust_learning_rate(optimizer, lr):
+    """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
 
 def eval(model, dataLoader_valid):
     with torch.no_grad():
@@ -25,8 +30,9 @@ def eval(model, dataLoader_valid):
         all_labels = []
         for valid_data in dataLoader_valid:
             images, labels  = valid_data
-            images = images.cuda()
-            labels = labels.cuda().long()
+#             ipdb.set_trace()
+            images = images.cuda().float()
+            labels = labels.cuda().float()
             results = data_parallel(model, images)
             model.getLoss(results, labels)
             all_results.append(results)
@@ -48,18 +54,21 @@ def train(checkPoint_start=0, lr=3e-4, batch_size=36):
     epoch = 0
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr,  betas=(0.9, 0.99), weight_decay=0.0002)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr,  betas=(0.9, 0.99), weight_decay=0.01)   
     # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0002)
-    resultDir = './WC_result/{}_{}'.format('HeadWhaleModel', lr)
+    resultDir = './WC_result/{}'.format('HeadWhaleModel')
     ImageDir = resultDir + '/image'
     checkPoint = os.path.join(resultDir, 'checkpoint')
     os.makedirs(checkPoint, exist_ok=True)
     os.makedirs(ImageDir, exist_ok=True)
 
     dst_train = WhaleDataset()
-    dataloader_train = DataLoader(dst_train, shuffle=True, batch_size=batch_size, num_workers=0)
+    dataloader_train = DataLoader(dst_train, shuffle=True, drop_last=True, batch_size=batch_size, num_workers=12)
+    
+    num_data = len(dst_train.com_train)
     print(dst_train.__len__())
     dst_valid = WhaleTestDataset()
-    dataloader_valid = DataLoader(dst_valid, shuffle=False, batch_size=batch_size, num_workers=0)
+    dataloader_valid = DataLoader(dst_valid, shuffle=False, drop_last=True, batch_size=batch_size, num_workers=10)
     train_loss = 0.0
     valid_loss = 0.0
 
@@ -106,8 +115,8 @@ def train(checkPoint_start=0, lr=3e-4, batch_size=36):
 
             model.mode = 'train'
             images, labels = data
-            images = images.cuda()
-            labels = labels.cuda().long()
+            images = images.cuda().float()
+            labels = labels.cuda().float()
             results = data_parallel(model, images)
             model.getLoss(results, labels)
             batch_loss = model.loss
@@ -137,6 +146,6 @@ if __name__ == '__main__':
     if 1:
         os.environ['CUDA_VISIBLE_DEVICES'] = '0'
         checkPoint_start = 0
-        lr = 3e-4
-        batch_size = 12
+        lr = 1e-4
+        batch_size = 64
         train( checkPoint_start, lr, batch_size)
