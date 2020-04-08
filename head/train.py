@@ -31,8 +31,9 @@ def eval(model, dataLoader_valid):
         for valid_data in dataLoader_valid:
             images, labels  = valid_data
 #             ipdb.set_trace()
-            images = images.cuda().float()
-            labels = labels.cuda().float()
+            if torch.cuda.is_available():
+                images = images.cuda().float()
+                labels = labels.cuda().float()
             results = data_parallel(model, images)
             model.getLoss(results, labels)
             all_results.append(results)
@@ -46,7 +47,9 @@ def eval(model, dataLoader_valid):
         return valid_loss
 
 def train(checkPoint_start=0, lr=3e-4, batch_size=36):
-    model = HeadWhaleModel().cuda()
+    model = HeadWhaleModel()
+    if torch.cuda.is_available():
+        model = model.cuda()
     i = 0
     iter_smooth = 50
     iter_valid = 200
@@ -67,7 +70,7 @@ def train(checkPoint_start=0, lr=3e-4, batch_size=36):
     
     num_data = len(dst_train.com_train)
     print(dst_train.__len__())
-    dst_valid = WhaleTestDataset()
+    dst_valid = WhaleValidDataset()
     dataloader_valid = DataLoader(dst_valid, shuffle=False, drop_last=True, batch_size=batch_size, num_workers=10)
     train_loss = 0.0
     valid_loss = 0.0
@@ -114,9 +117,10 @@ def train(checkPoint_start=0, lr=3e-4, batch_size=36):
             model.train()
 
             model.mode = 'train'
-            images, labels = data
-            images = images.cuda().float()
-            labels = labels.cuda().float()
+            images, labels = data        
+            if torch.cuda.is_available():
+                images = images.cuda().float()
+                labels = labels.cuda().float()
             results = data_parallel(model, images)
             model.getLoss(results, labels)
             batch_loss = model.loss
