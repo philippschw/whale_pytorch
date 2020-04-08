@@ -94,4 +94,4 @@ class WhaleTestDataset(Dataset):
     def __getitem__(self, index):
         enc = self.com_test[index]
         encoding = np.concatenate([self.get_encoding(enc[0]), self.get_encoding(enc[1])])
-        return encoding, comb
+        return encoding, '|'.join(enc)
