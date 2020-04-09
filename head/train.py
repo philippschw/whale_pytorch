@@ -21,7 +21,7 @@ def adjust_learning_rate(optimizer, lr):
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
-def eval(model, dataLoader_valid):
+def eval(model, dataLoader_valid, margin):
     with torch.no_grad():
         model.eval()
         model.mode = 'valid'
@@ -34,7 +34,8 @@ def eval(model, dataLoader_valid):
             if torch.cuda.is_available():
                 images = images.cuda().float()
                 labels = labels.cuda().float()
-            results = data_parallel(model, images)
+            output1, output2 = data_parallel(model, images)
+            results = threashold_contrastive_loss(output1, output2, margin)
             model.getLoss(results, labels)
             all_results.append(results)
             all_labels.append(labels)
@@ -46,7 +47,7 @@ def eval(model, dataLoader_valid):
         valid_loss /= index_valid
         return valid_loss
 
-def train(checkPoint_start=0, lr=3e-4, batch_size=36):
+def train(checkPoint_start=0, lr=3e-4, batch_size=36, margin=1):
     model = HeadWhaleModel()
     if torch.cuda.is_available():
         model = model.cuda()
@@ -95,7 +96,7 @@ def train(checkPoint_start=0, lr=3e-4, batch_size=36):
         for data in dataloader_train:
             epoch = start_epoch + (i - checkPoint_start) * 4 * batch_size/num_data
             if i % iter_valid == 0:
-                valid_loss = eval(model, dataloader_valid)
+                valid_loss = eval(model, dataloader_valid, margin)
                 print(
                         lr,
                         epoch,
@@ -121,8 +122,8 @@ def train(checkPoint_start=0, lr=3e-4, batch_size=36):
             if torch.cuda.is_available():
                 images = images.cuda().float()
                 labels = labels.cuda().float()
-            results = data_parallel(model, images)
-            model.getLoss(results, labels)
+            output1, output2 = data_parallel(model, images)
+            model.getLoss(output1, output2, labels)
             batch_loss = model.loss
 
             optimizer.zero_grad()
@@ -152,4 +153,5 @@ if __name__ == '__main__':
         checkPoint_start = 0
         lr = 1e-4
         batch_size = 64
-        train( checkPoint_start, lr, batch_size)
+        margin = 1
+        train(checkPoint_start, lr, batch_size, margin)

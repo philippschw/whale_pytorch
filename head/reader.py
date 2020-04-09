@@ -36,9 +36,10 @@ class WhaleDataset(Dataset):
 
     def __getitem__(self, index):
         enc = self.com_train.iloc[index]
-        encoding = np.concatenate([self.get_encoding(enc.iloc[0]), self.get_encoding(enc.iloc[1])])
+        # encoding = np.concatenate([self.get_encoding(enc.iloc[0]), self.get_encoding(enc.iloc[1])])
+        encoding1, encoding2 = self.get_encoding(enc.iloc[0]), self.get_encoding(enc.iloc[1])
         label = enc.iloc[2]
-        return encoding, label
+        return encoding1, encoding2, label
 
 
 class WhaleValidDataset(Dataset):
@@ -66,9 +67,9 @@ class WhaleValidDataset(Dataset):
 
     def __getitem__(self, index):
         enc = self.com_val.iloc[index]
-        encoding = np.concatenate([self.get_encoding(enc.iloc[0]), self.get_encoding(enc.iloc[1])])
+        encoding1, encoding2 = self.get_encoding(enc.iloc[0]), self.get_encoding(enc.iloc[1])
         label = enc.iloc[2]
-        return encoding, label
+        return encoding1, encoding2, label
 
 
 class WhaleTestDataset(Dataset):
@@ -93,5 +94,5 @@ class WhaleTestDataset(Dataset):
 
     def __getitem__(self, index):
         enc = self.com_test[index]
-        encoding = np.concatenate([self.get_encoding(enc[0]), self.get_encoding(enc[1])])
-        return encoding, '|'.join(enc)
+        encoding1, encoding2 = self.get_encoding(enc.iloc[0]), self.get_encoding(enc.iloc[1])
+        return encoding1, encoding2, '|'.join(enc)

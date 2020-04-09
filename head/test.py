@@ -12,16 +12,7 @@ num_TTA = 2
 
 import ipdb
 
-
-def get_df_top20(dist_mat, test_imgs, allnames):
-    dist_mat = dist_mat.cpu().numpy()
-    dist_mat_sorted = dist_mat.argsort()
-    df_top20 = pd.DataFrame(dist_mat_sorted[:, :21])
-    df_top20 = df_top20.applymap(lambda x: allnames[x])
-    df_top20 = df_top20[df_top20[0].isin(test_imgs)]
-    return df_top20
-
-def test(checkPoint_start=0):
+def test(checkPoint_start=0, margin=1):
     sample_submission = pd.read_csv('../WC_input/sample_submission.csv', header=None)
     test_imgs = sample_submission.iloc[:, 0].tolist()
     batch_size = 1200
@@ -46,7 +37,8 @@ def test(checkPoint_start=0):
             images, names = data
             if torch.cuda.is_available():
                 images = images.cuda().float()
-            results = model(images)
+            output1, output2 = model(images)
+            results = threashold_contrastive_loss(output1, output2, margin)
             allresults.append(results)
             for name in names:
                 allnames.append(name)
@@ -73,5 +65,6 @@ def test(checkPoint_start=0):
 
 if __name__ == '__main__':
     checkPoint_start = 10000
+    margin = 1
     test(checkPoint_start)
 
