@@ -2,80 +2,44 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import torch.optim as optim
-
-def threashold_contrastive_loss(input1, input2, m):
-    """dist < m --> 1 else 0"""
-    diff = input1 - input2
-    dist_sq = torch.sum(torch.pow(diff, 2), 1)
-    dist = torch.sqrt(dist_sq)
-    threashold = dist.clone()
-    threashold.data.fill_(m)
-    return (dist < threashold).float().view(-1, 1)
-class ContrastiveLoss(torch.nn.Module):
-    """
-    Contrastive loss function.
-    Based on:
-    """
-
-    def __init__(self, margin=1.0):
-        super(ContrastiveLoss, self).__init__()
-        self.margin = margin
-
-    def check_type_forward(self, in_types):
-        assert len(in_types) == 3
-
-        x0_type, x1_type, y_type = in_types
-        assert x0_type.size() == x1_type.shape
-        assert x1_type.size()[0] == y_type.shape[0]
-        assert x1_type.size()[0] > 0
-        assert x0_type.dim() == 2
-        assert x1_type.dim() == 2
-        assert y_type.dim() == 1
-
-    def forward(self, x0, x1, y):
-        self.check_type_forward((x0, x1, y))
-
-        # euclidian distance
-        diff = x0 - x1
-        dist_sq = torch.sum(torch.pow(diff, 2), 1)
-        dist = torch.sqrt(dist_sq)
-
-        mdist = self.margin - dist
-        dist = torch.clamp(mdist, min=0.0)
-        loss = y * dist_sq + (1 - y) * torch.pow(dist, 2)
-        loss = torch.sum(loss) / 2.0 / x0.size()[0]
-        return loss
+import ipdb
     
 class HeadWhaleModel(nn.Module):
     
+    def num_flat_features(self, x):
+        size = x.size()[1:]  # all dimensions except the batch dimension
+        num_features = 1
+        for s in size:
+            num_features *= s
+        return num_features
+    
     def __init__(self):
         super().__init__()
-        # self.dout0 = nn.Dropout(0.5)
-        # self.fc1 = nn.Linear(4096, 1024)
-        # self.bn1 = nn.BatchNorm1d(1024)
-        # self.relu1 = nn.ReLU()
-        # self.dout1 = nn.Dropout(0.5)
-        # self.fc2 = nn.Linear(1024, 256)
-        # self.bn2 = nn.BatchNorm1d(256)
-        # self.relu2 = nn.ReLU()
-        # self.dout2 = nn.Dropout(0.3)
-        # self.out = nn.Linear(256, 1)
-        # self.out_act = nn.Sigmoid()
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=128, kernel_size=(4,1), padding=(0, 0), dilation=(1, 1))
+        self.relu1 = nn.ReLU()
+        self.conv2 = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=(1,128))
+        self.ap2d = nn.AdaptiveAvgPool2d(1)
+        self.out_act = nn.Sigmoid()
         
     def forward(self, y1, y2):
-        # a1 = self.bn1(self.fc1(self.dout0(input_)))
-        # h1 = self.relu1(a1)
-        # dout = self.dout1(h1)
-        # a2 = self.bn2(self.fc2(dout))
-        # h2 = self.dout2(self.relu2(a2))
-        # a3 = self.out(h2)
-        # y = self.out_act(a3)
-        return y1, y2
+        par1 = y1*y2
+        par2 = y1+y2
+        par3 = torch.abs(y1 - y2)
+        par4 = par3**2
+        x = torch.cat([par1, par2, par3, par4], 1)
+        x = x.reshape(-1, 1, 4, 2048)
+        x = self.relu1(self.conv1(x))
+#         ipdb.set_trace()
+        x = x.reshape(-1, 1, 2048, 128)
+        x = self.ap2d(self.conv2(x))
+#         ipdb.set_trace()
+        x = x.view(-1, self.num_flat_features(x))
+        y = self.out_act(x)
+        return y
     
-    def getLoss(self, output1, output2, labels):
-        # criterion = nn.BCELoss()
-        criterion = ContrastiveLoss(margin=1)
-        self.loss = criterion(output1, output2, labels)
+    def getLoss(self, output, labels):
+        criterion = nn.BCELoss()
+        self.loss = criterion(output, labels)
         
     def load_pretrain(self, pretrain_file, skip=[]):
         pretrain_state_dict = torch.load(pretrain_file)

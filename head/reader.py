@@ -10,6 +10,7 @@ from torch.utils.data import DataLoader
 from itertools import  product
 from glob import glob
 from pathlib import Path
+import ipdb
 
 class WhaleDataset(Dataset):
     def __init__(self):
@@ -94,5 +95,6 @@ class WhaleTestDataset(Dataset):
 
     def __getitem__(self, index):
         enc = self.com_test[index]
-        encoding1, encoding2 = self.get_encoding(enc.iloc[0]), self.get_encoding(enc.iloc[1])
+#         ipdb.set_trace()
+        encoding1, encoding2 = self.get_encoding(enc[0]), self.get_encoding(enc[1])
         return encoding1, encoding2, '|'.join(enc)

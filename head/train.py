@@ -21,7 +21,7 @@ def adjust_learning_rate(optimizer, lr):
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
-def eval(model, dataLoader_valid, margin):
+def eval(model, dataLoader_valid):
     with torch.no_grad():
         model.eval()
         model.mode = 'valid'
@@ -29,13 +29,13 @@ def eval(model, dataLoader_valid, margin):
         all_results = []
         all_labels = []
         for valid_data in dataLoader_valid:
-            images, labels  = valid_data
+            image1, image2, labels  = valid_data
 #             ipdb.set_trace()
             if torch.cuda.is_available():
-                images = images.cuda().float()
+                image1, image2 = image1.cuda().float(), image2.cuda().float()
                 labels = labels.cuda().float()
-            output1, output2 = data_parallel(model, images)
-            results = threashold_contrastive_loss(output1, output2, margin)
+            results = model(image1, image2)
+#             output1, output2 = data_parallel(model, image1, image2)
             model.getLoss(results, labels)
             all_results.append(results)
             all_labels.append(labels)
@@ -47,8 +47,9 @@ def eval(model, dataLoader_valid, margin):
         valid_loss /= index_valid
         return valid_loss
 
-def train(checkPoint_start=0, lr=3e-4, batch_size=36, margin=1):
+def train(checkPoint_start=0, lr=3e-4, batch_size=36):
     model = HeadWhaleModel()
+    print(model)
     if torch.cuda.is_available():
         model = model.cuda()
     i = 0
@@ -58,8 +59,6 @@ def train(checkPoint_start=0, lr=3e-4, batch_size=36, margin=1):
     epoch = 0
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr,  betas=(0.9, 0.99), weight_decay=0.0002)
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr,  betas=(0.9, 0.99), weight_decay=0.01)   
-    # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0002)
     resultDir = './WC_result/{}'.format('HeadWhaleModel')
     ImageDir = resultDir + '/image'
     checkPoint = os.path.join(resultDir, 'checkpoint')
@@ -96,7 +95,7 @@ def train(checkPoint_start=0, lr=3e-4, batch_size=36, margin=1):
         for data in dataloader_train:
             epoch = start_epoch + (i - checkPoint_start) * 4 * batch_size/num_data
             if i % iter_valid == 0:
-                valid_loss = eval(model, dataloader_valid, margin)
+                valid_loss = eval(model, dataloader_valid)
                 print(
                         lr,
                         epoch,
@@ -118,12 +117,13 @@ def train(checkPoint_start=0, lr=3e-4, batch_size=36, margin=1):
             model.train()
 
             model.mode = 'train'
-            images, labels = data        
+            image1, image2, labels  = data
+#             ipdb.set_trace()
             if torch.cuda.is_available():
-                images = images.cuda().float()
+                image1, image2 = image1.cuda().float(), image2.cuda().float()
                 labels = labels.cuda().float()
-            output1, output2 = data_parallel(model, images)
-            model.getLoss(output1, output2, labels)
+            output = model(image1, image2)
+            model.getLoss(output, labels)
             batch_loss = model.loss
 
             optimizer.zero_grad()
@@ -151,7 +151,6 @@ if __name__ == '__main__':
     if 1:
         os.environ['CUDA_VISIBLE_DEVICES'] = '0'
         checkPoint_start = 0
-        lr = 1e-4
-        batch_size = 64
-        margin = 1
-        train(checkPoint_start, lr, batch_size, margin)
+        lr = 3e-3
+        batch_size = 32
+        train(checkPoint_start, lr, batch_size)

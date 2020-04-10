@@ -17,7 +17,7 @@ def test(checkPoint_start=0, margin=1):
     test_imgs = sample_submission.iloc[:, 0].tolist()
     batch_size = 1200
     dst_test = WhaleTestDataset()
-    dataloader_test = DataLoader(dst_test, batch_size=batch_size, num_workers=18)
+    dataloader_test = DataLoader(dst_test, batch_size=batch_size, num_workers=2)
     model = HeadWhaleModel()
     if torch.cuda.is_available():
         model = model.cuda()
@@ -34,11 +34,11 @@ def test(checkPoint_start=0, margin=1):
     with torch.no_grad():
         model.eval()
         for data in tqdm(dataloader_test):
-            images, names = data
+            image1, image2, names = data
             if torch.cuda.is_available():
-                images = images.cuda().float()
-            output1, output2 = model(images)
-            results = threashold_contrastive_loss(output1, output2, margin)
+                image1, image2 = image1.cuda().float(), image2.cuda().float()
+           
+            results = model(image1, image2)
             allresults.append(results)
             for name in names:
                 allnames.append(name)
@@ -64,7 +64,7 @@ def test(checkPoint_start=0, margin=1):
         df.to_csv(os.path.join(npy_dir, 'submission_header_model.csv'), header=False)
 
 if __name__ == '__main__':
-    checkPoint_start = 10000
+    checkPoint_start = 3000
     margin = 1
     test(checkPoint_start)
 
