@@ -10,6 +10,8 @@ import time
 from torch.nn.parallel.data_parallel import data_parallel
 import ipdb
 
+from torch.utils.tensorboard import SummaryWriter
+
 def time_to_str(t):
     t  = int(t)
     hr = t//60
@@ -58,8 +60,9 @@ def train(checkPoint_start=0, lr=3e-4, batch_size=36):
     iter_save = 200
     epoch = 0
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr,  betas=(0.9, 0.99), weight_decay=0.0002)
-    resultDir = './WC_result/{}'.format('HeadWhaleModel')
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr,  betas=(0.9, 0.99), weight_decay=0.002)
+    resultDir = './WC_result/{}'.format('HeadWhaleModel8')
+    writer = SummaryWriter(resultDir)
     ImageDir = resultDir + '/image'
     checkPoint = os.path.join(resultDir, 'checkpoint')
     os.makedirs(checkPoint, exist_ok=True)
@@ -96,15 +99,11 @@ def train(checkPoint_start=0, lr=3e-4, batch_size=36):
             epoch = start_epoch + (i - checkPoint_start) * 4 * batch_size/num_data
             if i % iter_valid == 0:
                 valid_loss = eval(model, dataloader_valid)
-                print(
-                        lr,
-                        epoch,
-                        valid_loss,
-                        train_loss,
-                        batch_loss,
-                        time_to_str((timer() - start) / 60))
-                time.sleep(0.01)
-
+                writer.add_scalars('loss', {'train_loss': train_loss,
+                                           'val_loss': valid_loss
+                                          },
+                                epoch * len(dataloader_train) + i)
+                
             if i % iter_save == 0 and not i == checkPoint_start:
                 torch.save(model.state_dict(), resultDir + '/checkpoint/%08d_model.pth' % (i))
                 torch.save({
@@ -135,13 +134,6 @@ def train(checkPoint_start=0, lr=3e-4, batch_size=36):
             train_loss_sum += batch_loss
             if (i + 1) % iter_smooth == 0:
                 train_loss = train_loss_sum/sum
-                print (
-                    lr,
-                    epoch,
-                    valid_loss,
-                    train_loss,
-                    batch_loss,
-                    time_to_str((timer() - start) / 60), checkPoint_start, i)
             i += 1
 
         pass
@@ -151,6 +143,6 @@ if __name__ == '__main__':
     if 1:
         os.environ['CUDA_VISIBLE_DEVICES'] = '0'
         checkPoint_start = 0
-        lr = 3e-3
+        lr = 0.0001 # 3e-4
         batch_size = 32
         train(checkPoint_start, lr, batch_size)

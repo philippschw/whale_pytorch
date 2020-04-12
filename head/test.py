@@ -21,7 +21,7 @@ def test(checkPoint_start=0, margin=1):
     model = HeadWhaleModel()
     if torch.cuda.is_available():
         model = model.cuda()
-    resultDir = './WC_result/{}'.format('HeadWhaleModel')
+    resultDir = './WC_result/{}'.format('HeadWhaleModel8')
     checkPoint = os.path.join(resultDir, 'checkpoint')
 
     npy_dir = resultDir + '/out_{}'.format(checkPoint_start)
@@ -54,7 +54,7 @@ def test(checkPoint_start=0, margin=1):
 
         allresults_df[['name1', 'name2']] = allresults_df['names'].str.split('|',1, expand=True)
 
-        df = allresults_df.sort_values('target',ascending = False).groupby('name1').head(20)
+        df = allresults_df.sort_values('target', ascending = False).groupby('name1').head(20)
         df = df[['name1', 'name2']]
         
         dic = {}
@@ -64,7 +64,6 @@ def test(checkPoint_start=0, margin=1):
         df.to_csv(os.path.join(npy_dir, 'submission_header_model.csv'), header=False)
 
 if __name__ == '__main__':
-    checkPoint_start = 3000
-    margin = 1
+    checkPoint_start = 5000
     test(checkPoint_start)
 
