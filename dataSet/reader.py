@@ -192,26 +192,34 @@ class WhaleDataset(Dataset):
         negative_month = self.monthonehotencoder.transform(np.array([img_name_extract_month(negative_name)]).reshape(-1, 1))
         negative_month2 = self.monthonehotencoder.transform(np.array([img_name_extract_month(negative_name2)]).reshape(-1, 1))
 
-        anchor = torch.zeros([256, 512])
-        anchor[0, :17]= torch.from_numpy(np.concatenate([anchor_year.flatten(), anchor_month.flatten()]))
-        positive = torch.zeros([256, 512])
-        positive[0, :17]= torch.from_numpy(np.concatenate([positive_year.flatten(), positive_month.flatten()]))
-        negative = torch.zeros([256, 512])
-        negative[0, :17]= torch.from_numpy(np.concatenate([negative_year.flatten(), negative_month.flatten()]))
-        negative2 = torch.zeros([256, 512])
-        negative2[0, :17]= torch.from_numpy(np.concatenate([negative_year2.flatten(), negative_month2.flatten()]))
+        # anchor = torch.zeros([256, 512])
+        # anchor[0, :17]=
+        anchor = np.concatenate([np.array([self.labels_dict[label]]), anchor_year.flatten(), anchor_month.flatten()])
+        # positive = torch.zeros([256, 512])
+        positive= np.concatenate([np.array([self.labels_dict[label]]), positive_year.flatten(), positive_month.flatten()])
+        # negative = torch.zeros([256, 512])
+        negative = np.concatenate([np.array([self.labels_dict[negative_label]]), negative_year.flatten(), negative_month.flatten()])
+        # negative2 = torch.zeros([256, 512])
+        negative2= np.concatenate([np.array([self.labels_dict[negative_label2]]), negative_year2.flatten(), negative_month2.flatten()])
 
         anchor_image, anchor_add = self.get_image(anchor_name, self.transform_train, label)
         positive_image, positive_add = self.get_image(positive_name, self.transform_train, label)
         negative_image,  negative_add = self.get_image(negative_name, self.transform_train, negative_label)
         negative_image2, negative_add2 = self.get_image(negative_name2, self.transform_train, negative_label2)
-
+        # ipdb.set_trace()
         assert anchor_name != negative_name
-        return [torch.cat((anchor_image, anchor.unsqueeze(0))),
-                torch.cat((positive_image, positive.unsqueeze(0))),
-                torch.cat((negative_image, negative.unsqueeze(0))),
-                torch.cat((negative_image2, negative2.unsqueeze(0)))], \
-               [self.labels_dict[label] + anchor_add, self.labels_dict[label] + positive_add, self.labels_dict[negative_label] + negative_add, self.labels_dict[negative_label2] + negative_add2]
+        # return [torch.cat((anchor_image, anchor.unsqueeze(0))),
+        #         torch.cat((positive_image, positive.unsqueeze(0))),
+        #         torch.cat((negative_image, negative.unsqueeze(0))),
+        #         torch.cat((negative_image2, negative2.unsqueeze(0)))], \
+        return [anchor_image,
+                positive_image,
+                negative_image,
+                negative_image2],\
+                [anchor,
+                 positive,
+                 negative, 
+                 negative2]
 
 class WhaleTestDataset(Dataset):
     def __init__(self, names, labels=None, mode='test',transform=None):
@@ -298,18 +306,15 @@ class WhaleTestDataset(Dataset):
             name = self.names[index]
             anchor_year = self.yearonehotencoder.transform(np.array([self.year2enc[img_name_extract_year(name)]]).reshape(-1, 1))
             anchor_month= self.monthonehotencoder.transform(np.array([img_name_extract_month(name)]).reshape(-1, 1))
-            anchor = torch.zeros([256, 512])
-            anchor[0, :17]= torch.from_numpy(np.concatenate([anchor_year.flatten(), anchor_month.flatten()]))
-            img1, img2 = self.get_image(name, self.transform, mode=self.mode)
-            image = [torch.cat((img1, anchor.unsqueeze(0))), torch.cat((img2, anchor.unsqueeze(0)))]
-            return image, name
+            label = np.concatenate([np.array([0]), anchor_year.flatten(), anchor_month.flatten()])
+            image = self.get_image(name, self.transform, mode=self.mode)
+            # image = [torch.cat((img1, anchor.unsqueeze(0))), torch.cat((img2, anchor.unsqueeze(0)))]
+            return image, label, name
         elif self.mode in ['valid', 'train']:
             name = self.names[index]
             anchor_year = self.yearonehotencoder.transform(np.array([self.year2enc[img_name_extract_year(name)]]).reshape(-1, 1))
             anchor_month= self.monthonehotencoder.transform(np.array([img_name_extract_month(name)]).reshape(-1, 1))
-            anchor = torch.zeros([256, 512])
-            anchor[0, :17]= torch.from_numpy(np.concatenate([anchor_year.flatten(), anchor_month.flatten()]))
-            label = self.labels_dict[self.labels[index]]
-            img1, img2 = self.get_image(name, self.transform)
-            image = [torch.cat((img1, anchor.unsqueeze(0))), torch.cat((img2, anchor.unsqueeze(0)))]
+            label = np.concatenate([np.array([self.labels_dict[self.labels[index]]]), anchor_year.flatten(), anchor_month.flatten()])
+            image = self.get_image(name, self.transform)
+            # image = [torch.cat((img1, anchor.unsqueeze(0))), torch.cat((img2, anchor.unsqueeze(0)))]
             return image, label, name

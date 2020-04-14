@@ -130,8 +130,8 @@ def eval(model, dataLoader_valid):
             images, labels, names = valid_data
             images = images.cuda()
             labels = labels.cuda().long()
-            # feature, local_feat, results = model(images)
-            feature, local_feat, results = data_parallel(model, images)
+            feature, local_feat, results = model(images, labels)
+            # feature, local_feat, results = data_parallel(model, images)
             model.getLoss(feature[::2], local_feat[::2], results[::2], labels)
             results = torch.sigmoid(results)
             results_zeros = (results[::2, :2233] + results[1::2, 2233:])/2
@@ -266,8 +266,8 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
             images, labels = data
             images = images.cuda()
             labels = labels.cuda().long()
-            # global_feat, local_feat, results = model(images)
-            global_feat, local_feat, results = data_parallel(model,images)
+            global_feat, local_feat, results = model(images, labels)
+            # global_feat, local_feat, results = data_parallel(model,images)
             model.getLoss(global_feat, local_feat, results, labels)
             batch_loss = model.loss
 
@@ -314,6 +314,6 @@ if __name__ == '__main__':
         min_num_class = 5
         checkPoint_start = 0
         lr = 3e-4
-        batch_size = 12
+        batch_size = 2 # 2, 12
         print(5005%batch_size)
         train(freeze, fold_index, model_name, min_num_class, checkPoint_start, lr, batch_size)

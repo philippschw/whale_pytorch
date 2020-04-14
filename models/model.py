@@ -72,10 +72,12 @@ class model_whale(nn.Module):
         init.constant_(self.fc.bias, 0)
 
     def forward(self, x, label=None):
-        head_enc = x[:, 4]
-        x = x[:, :4]
+        # head_enc = x[:, 4]
+        # x = x[:, :4]
         feat = self.basemodel(x)
         # global feat
+
+
         global_feat = F.avg_pool2d(feat, feat.size()[2:])
         global_feat = global_feat.view(global_feat.size(0), -1)
         global_feat = F.dropout(global_feat, p=0.2)
@@ -83,6 +85,8 @@ class model_whale(nn.Module):
         global_feat = l2_norm(global_feat)
 
         # local feat
+        print (label[:, 1:].shape)
+
         local_feat = torch.mean(feat, -1, keepdim=True)
         local_feat = self.local_bn(self.local_conv(local_feat))
         local_feat = local_feat.squeeze(-1).permute(0, 2, 1)
@@ -157,6 +161,7 @@ class model_whale(nn.Module):
 
 
     def getLoss(self, global_feat, local_feat, results,labels):
+        labels = labels[:, 0]
         triple_loss = global_loss(TripletLoss(margin=0.3), global_feat, labels)[0] + \
                       local_loss(TripletLoss(margin=0.3), local_feat, labels)[0]
         loss_ = sigmoid_loss(results, labels, topk=30)
