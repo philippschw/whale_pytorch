@@ -127,3 +127,4 @@ venv.bak/
 # IDE
 .idea/
 .vscode/*
+head/out_basemodel/
