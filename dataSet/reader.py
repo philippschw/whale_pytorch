@@ -300,8 +300,9 @@ class WhaleTestDataset(Dataset):
             anchor_month= self.monthonehotencoder.transform(np.array([img_name_extract_month(name)]).reshape(-1, 1))
             anchor = torch.zeros([256, 512])
             anchor[0, :17]= torch.from_numpy(np.concatenate([anchor_year.flatten(), anchor_month.flatten()]))
-            image = self.get_image(name, self.transform, mode=self.mode)
-            return torch.cat((image, anchor.unsqueeze(0))), name
+            img1, img2 = self.get_image(name, self.transform, mode=self.mode)
+            image = [torch.cat((img1, anchor.unsqueeze(0))), torch.cat((img2, anchor.unsqueeze(0)))]
+            return image, name
         elif self.mode in ['valid', 'train']:
             name = self.names[index]
             anchor_year = self.yearonehotencoder.transform(np.array([self.year2enc[img_name_extract_year(name)]]).reshape(-1, 1))
@@ -309,5 +310,6 @@ class WhaleTestDataset(Dataset):
             anchor = torch.zeros([256, 512])
             anchor[0, :17]= torch.from_numpy(np.concatenate([anchor_year.flatten(), anchor_month.flatten()]))
             label = self.labels_dict[self.labels[index]]
-            image = self.get_image(name, self.transform)
-            return torch.cat((image, anchor.unsqueeze(0))), label, name
+            img1, img2 = self.get_image(name, self.transform)
+            image = [torch.cat((img1, anchor.unsqueeze(0))), torch.cat((img2, anchor.unsqueeze(0)))]
+            return image, label, name
