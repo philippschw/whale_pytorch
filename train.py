@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import os
 
 from timeit import default_timer as timer
@@ -182,7 +182,7 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
     os.makedirs(ImageDir, exist_ok=True)
     log = Logger()
     log.open(os.path.join(resultDir, 'log_train.txt'), mode= 'a')
-    log.write(' start_time :{} \n'.format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+    log.write(' start_time :{} \n'.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
     log.write(' batch_size :{} \n'.format(batch_size))
     # Image,Id
     data_train = pd.read_csv('./WC_input/train_split_{}.csv'.format(fold_index), dtype='object')
@@ -308,11 +308,11 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
 if __name__ == '__main__':
     if 1:
         os.environ['CUDA_VISIBLE_DEVICES'] = '0' #'0,1,2,3,5'
-        freeze = True
+        freeze = False
         model_name = 'se_resnet50'
-        fold_index = 5
-        min_num_class = 1
-        checkPoint_start = 6800
+        fold_index = 1
+        min_num_class = 5
+        checkPoint_start = 0
         lr = 3e-4
         batch_size = 12
         print(5005%batch_size)

@@ -75,7 +75,6 @@ class WhaleDataset(Dataset):
         self.get_year_encoder()
         self.get_month_encoder()
         self.year2enc = dict(zip(range(2005, 2019), self.binned_year.flatten()))
-
         self.get_month_encoder()
         self.id_labels = {Image:Id for Image, Id in zip(self.names, self.labels)}
         labels = []
@@ -223,8 +222,21 @@ class WhaleTestDataset(Dataset):
         self.bbox_dict = self.load_bbox()
         self.labels_dict = self.load_labels()
         self.rle_masks = self.load_mask()
+        self.get_year_encoder()
+        self.get_month_encoder()
+        self.year2enc = dict(zip(range(2005, 2019), self.binned_year.flatten()))
+        self.get_month_encoder()
         self.transform = transform
 
+    def get_year_encoder(self):
+        self.binned_year = pd.cut(np.array(range(2005, 2019)), 5, labels=False).reshape(-1, 1)
+        self.yearonehotencoder = OneHotEncoder(sparse=False)
+        _ = self.yearonehotencoder.fit_transform(self.binned_year)
+
+    def get_month_encoder(self):
+        self.monthonehotencoder = OneHotEncoder(sparse=False)
+        _ = self.monthonehotencoder.fit_transform(np.array(range(1,13)).reshape(-1, 1))
+        
     def __len__(self):
         return len(self.names)
 
@@ -237,7 +249,7 @@ class WhaleTestDataset(Dataset):
         except:
             mask = cv2.imread('./WC_input/masks/' + name, cv2.IMREAD_GRAYSCALE)
         if mask is None:
-            mask = torch.zeros_like(image[:, :, 0])
+            mask = np.zeros_like(image[:, :, 0])
         x0, y0, x1, y1 = self.bbox_dict[name]
         x0, y0, x1, y1 = [e if e > 0 else 0 for e in self.bbox_dict[name]]
         image = image[int(y0):int(y1), int(x0):int(x1)]
@@ -284,14 +296,18 @@ class WhaleTestDataset(Dataset):
     def __getitem__(self, index):
         if self.mode in ['test', 'data']:
             name = self.names[index]
+            anchor_year = self.yearonehotencoder.transform(np.array([self.year2enc[img_name_extract_year(name)]]).reshape(-1, 1))
+            anchor_month= self.monthonehotencoder.transform(np.array([img_name_extract_month(name)]).reshape(-1, 1))
+            anchor = torch.zeros([256, 512])
+            anchor[0, :17]= torch.from_numpy(np.concatenate([anchor_year.flatten(), anchor_month.flatten()]))
             image = self.get_image(name, self.transform, mode=self.mode)
-            return image, name
+            return torch.cat((image, anchor.unsqueeze(0))), name
         elif self.mode in ['valid', 'train']:
             name = self.names[index]
+            anchor_year = self.yearonehotencoder.transform(np.array([self.year2enc[img_name_extract_year(name)]]).reshape(-1, 1))
+            anchor_month= self.monthonehotencoder.transform(np.array([img_name_extract_month(name)]).reshape(-1, 1))
+            anchor = torch.zeros([256, 512])
+            anchor[0, :17]= torch.from_numpy(np.concatenate([anchor_year.flatten(), anchor_month.flatten()]))
             label = self.labels_dict[self.labels[index]]
             image = self.get_image(name, self.transform)
-            return image, label, name
-
-
-
-
+            return torch.cat((image, anchor.unsqueeze(0))), label, name
