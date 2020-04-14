@@ -72,6 +72,8 @@ class model_whale(nn.Module):
         init.constant_(self.fc.bias, 0)
 
     def forward(self, x, label=None):
+        head_enc = x[:, 4]
+        x = x[:, :4]
         feat = self.basemodel(x)
         # global feat
         global_feat = F.avg_pool2d(feat, feat.size()[2:])

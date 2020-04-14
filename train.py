@@ -11,7 +11,7 @@ import time
 from utils import *
 from torch.nn.parallel.data_parallel import data_parallel
 
-from torch.utils.tensorboard import SummaryWriter
+# from torch.utils.tensorboard import SummaryWriter
 
 def train_collate(batch):
 
