@@ -8,25 +8,28 @@ from dataSet.reader import *
 from dataSet.transform import *
 import os
 import shutil
+import ipdb
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 num_TTA = 2
 
 import ipdb
 
 def train_collate(batch):
-
+#     ipdb.set_trace()
     batch_size = len(batch)
-    images = [
-    ]
+    images = []
+    labels = []
     names = []
     for b in range(batch_size):
         if batch[b][0] is None:
             continue
         else:
             images.extend(batch[b][0])
-            names.append(batch[b][1])
+            labels.append(batch[b][1])
+            names.append(batch[b][2])
     images = torch.stack(images, 0)
-    return images, names
+    labels = torch.from_numpy(np.array(labels))
+    return images, labels, names
 
 
 def transform(image, mask):
@@ -87,9 +90,11 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
     with torch.no_grad():
         model.eval()
         for data in tqdm(dataloader_test):
-            images, names = data
+#             ipdb.set_trace()
+            images, labels, names = data
             images = images.cuda()
-            global_feat, local_feat, _ = model(images)
+            labels = labels.cuda()
+            global_feat, local_feat, _ = model(images, labels)
             global_feats.append(global_feat)
             local_feats.append(local_feat)
             for name in names:

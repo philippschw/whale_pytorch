@@ -100,6 +100,7 @@ class model_whale(nn.Module):
         # head_enc = x[:, 4]
         # x = x[:, :4]
         feat = self.basemodel(x)
+#         ipdb.set_trace()
         if label.shape[0] != feat.shape[0]:
             label =  repeat_np(label[:, 1:], 2, 0).float()
         else:
