@@ -6,7 +6,32 @@ from models.triplet_loss import *
 from models.utils import *
 import torch.nn.utils.weight_norm as weightNorm
 
+import ipdb
 
+def repeat_np(a, repeats, dim):
+    """
+    Substitute for numpy's repeat function. Taken from https://discuss.pytorch.org/t/how-to-tile-a-tensor/13853/2
+    torch.repeat([1,2,3], 2) --> [1, 2, 3, 1, 2, 3]
+    np.repeat([1,2,3], repeats=2, axis=0) --> [1, 1, 2, 2, 3, 3]
+
+    :param a: tensor
+    :param repeats: number of repeats
+    :param dim: dimension where to repeat
+    :return: tensor with repitions
+    """
+
+    init_dim = a.size(dim)
+    repeat_idx = [1] * a.dim()
+    repeat_idx[dim] = repeats
+    a = a.repeat(*(repeat_idx))
+    if a.is_cuda:  # use cuda-device if input was on cuda device already
+        order_index = torch.cuda.LongTensor(
+            torch.cat([init_dim * torch.arange(repeats, device=a.device) + i for i in range(init_dim)]))
+    else:
+        order_index = torch.LongTensor(
+            torch.cat([init_dim * torch.arange(repeats) + i for i in range(init_dim)]))
+
+    return torch.index_select(a, dim, order_index)
 
 class model_whale(nn.Module):
     def __init__(self, num_classes=5005, inchannels=3, model_name='resnet34'):
@@ -40,7 +65,7 @@ class model_whale(nn.Module):
             planes = 2048
         elif model_name == 'se_resnet50':
             self.basemodel = se_resnext50_32x4d(inchannels=inchannels, pretrained='imagenet')
-            planes = 2048
+            planes = 2065
         elif model_name == 'seresnext101':
             self.basemodel = se_resnext101_32x4d(inchannels=inchannels, pretrained='imagenet')
             planes = 2048
@@ -75,19 +100,25 @@ class model_whale(nn.Module):
         # head_enc = x[:, 4]
         # x = x[:, :4]
         feat = self.basemodel(x)
-        # global feat
-
-
+        if label.shape[0] != feat.shape[0]:
+            label =  repeat_np(label[:, 1:], 2, 0).float()
+        else:
+            label = label[:, 1:].float()
+        # global feat     
         global_feat = F.avg_pool2d(feat, feat.size()[2:])
         global_feat = global_feat.view(global_feat.size(0), -1)
         global_feat = F.dropout(global_feat, p=0.2)
+        try:
+            global_feat = torch.cat((global_feat, label), 1)  # Add Encoding of date of image
+        except:
+            ipdb.set_trace()
         global_feat = self.bottleneck_g(global_feat)
         global_feat = l2_norm(global_feat)
 
         # local feat
-        print (label[:, 1:].shape)
-
+#         ipdb.set_trace()
         local_feat = torch.mean(feat, -1, keepdim=True)
+        local_feat = torch.cat((local_feat, label.unsqueeze(2).repeat(1, 1, 8).unsqueeze(3)), 1) # Add Encoding of date of image
         local_feat = self.local_bn(self.local_conv(local_feat))
         local_feat = local_feat.squeeze(-1).permute(0, 2, 1)
         local_feat = l2_norm(local_feat, axis=-1)
@@ -161,7 +192,6 @@ class model_whale(nn.Module):
 
 
     def getLoss(self, global_feat, local_feat, results,labels):
-        labels = labels[:, 0]
         triple_loss = global_loss(TripletLoss(margin=0.3), global_feat, labels)[0] + \
                       local_loss(TripletLoss(margin=0.3), local_feat, labels)[0]
         loss_ = sigmoid_loss(results, labels, topk=30)
