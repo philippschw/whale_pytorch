@@ -94,45 +94,38 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
             local_feats.append(local_feat)
             for name in names:
                 allnames.append(name)
-        all_global_feat = torch.cat(global_feats)
-        all_local_feat = torch.cat(local_feats)
+        all_global_feat = normalize(torch.cat(global_feats), axis=-1) 
+        all_local_feat = normalize(torch.cat(local_feats), axis=-1) 
         
-        all_global_feat_np = all_global_feat.cpu().numpy()
-        all_local_feat_np = all_local_feat.cpu().numpy().reshape(-1, 4096)
-        
-        pd.DataFrame(all_global_feat_np[::2, :], index=allnames).to_csv(os.path.join(npy_dir, 'encoding_org_img.csv'), header=False)
-        pd.DataFrame(all_global_feat_np[1::2, :], index=allnames).to_csv(os.path.join(npy_dir, 'encoding_flp_img.csv'), header=False)
-#         ipdb.set_trace()
-        pd.DataFrame(all_local_feat_np[::2, :], index=allnames).to_csv(os.path.join(npy_dir, 'local_encoding_org_img.csv'), header=False)
-        pd.DataFrame(all_local_feat_np[1::2, :], index=allnames).to_csv(os.path.join(npy_dir, 'local_encoding_flp_img.csv'), header=False)
-#         ipdb.set_trace()
-        dist_local = euclidean_dist(all_local_feat.reshape(-1, 4096), all_local_feat.reshape(-1, 4096))
+#         dist_local = euclidean_dist(all_local_feat.reshape(-1, 4096), all_local_feat.reshape(-1, 4096))
+        all_local_feat = F.avg_pool2d(all_local_feat, kernel_size=(8,1)).squeeze()
+        dist_local = euclidean_dist(all_local_feat, all_local_feat)
         dist_global = euclidean_dist(all_global_feat, all_global_feat)
-
-        dist_global_org = dist_global[::2, ::2]
-        dist_global_flp = dist_global[1::2, 1::2,]
-        dist_global_min = np.minimum(dist_global[::2, ::2], dist_global[1::2, 1::2])
-
-        dist_local_org = dist_local[::2, ::2]
-        dist_local_flp = dist_local[1::2, 1::2]
-        dist_local_min = np.minimum(dist_local[::2, ::2], dist_local[1::2, 1::2])
-#         ipdb.set_trace()
-        get_df_top20(dist_global_org, test_imgs, allnames).to_csv(os.path.join(npy_dir, f'submission_global_{model_name}_sub_fold{fold_index}_org.csv'),
-                                                                  header=False, index=False)
-        get_df_top20(dist_global_flp, test_imgs, allnames).to_csv(os.path.join(npy_dir, f'submission_global_{model_name}_sub_fold{fold_index}_flp.csv'),
-                                                                  header=False, index=False)
-        get_df_top20(dist_global_min, test_imgs, allnames).to_csv(os.path.join(npy_dir, f'submission_global_{model_name}_sub_fold{fold_index}_min.csv'),
-                                                                  header=False, index=False)
-
-        get_df_top20(dist_local_org, test_imgs, allnames).to_csv(os.path.join(npy_dir, f'submission_local_{model_name}_sub_fold{fold_index}_org.csv'),
-                                                                  header=False, index=False)
-        get_df_top20(dist_local_flp, test_imgs, allnames).to_csv(os.path.join(npy_dir, f'submission_local_{model_name}_sub_fold{fold_index}_flp.csv'),
-                                                                  header=False, index=False)
-        get_df_top20(dist_local_min, test_imgs, allnames).to_csv(os.path.join(npy_dir, f'submission_local_{model_name}_sub_fold{fold_index}_min.csv'),
-                                                                  header=False, index=False)
         
+        dist_local = (torch.exp(dist_local) - 1.) / (torch.exp(dist_local) + 1.)
+        dist_global = (torch.exp(dist_global) - 1.) / (torch.exp(dist_global) + 1.)       
+        
+        dist_global_org = dist_global[::2, ::2]
+#         ipdb.set_trace()
+        dist_global_avg = dist_global[::2, ::2] + dist_global[1::2, 1::2]
+        
+        dist_avg_globallocal_org = dist_local[::2, ::2] +  dist_global[::2, ::2]
+        dist_local_avg = dist_local[::2, ::2] + dist_local[1::2, 1::2]
+        dist_avg_globallocal_avg = dist_global_avg + dist_local_avg
+
+        
+#         ipdb.set_trace()
+        get_df_top20(dist_global_org, test_imgs, allnames).to_csv(os.path.join(npy_dir, f'{model_name}_sub_fold{fold_index}_dist_global_org.csv'), header=False, index=False)
+
+        get_df_top20(dist_global_avg, test_imgs, allnames).to_csv(os.path.join(npy_dir, f'{model_name}_sub_fold{fold_index}_dist_global_avg.csv'), header=False, index=False)
+        
+        get_df_top20(dist_avg_globallocal_org, test_imgs, allnames).to_csv(os.path.join(npy_dir, f'{model_name}_sub_fold{fold_index}_dist_avg_globallocal_org.csv'), header=False, index=False)
+       
+        get_df_top20(dist_avg_globallocal_avg, test_imgs, allnames).to_csv(os.path.join(npy_dir, f'{model_name}_sub_fold{fold_index}_dist_avg_globallocal_avg.csv'), header=False, index=False)
+        
+                
 if __name__ == '__main__':
-    checkPoint_start = 10000
+    checkPoint_start = 22000
     fold_index = 5
     model_name = 'se_resnet50'
     test(checkPoint_start, fold_index, model_name)

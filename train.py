@@ -11,8 +11,6 @@ import time
 from utils import *
 from torch.nn.parallel.data_parallel import data_parallel
 
-from torch.utils.tensorboard import SummaryWriter
-
 def train_collate(batch):
 
     batch_size = len(batch)
@@ -311,8 +309,8 @@ if __name__ == '__main__':
         freeze = True
         model_name = 'se_resnet50'
         fold_index = 5
-        min_num_class = 1
-        checkPoint_start = 6800
+        min_num_class = 0
+        checkPoint_start = 18600
         lr = 3e-4
         batch_size = 12
         print(5005%batch_size)
