@@ -160,7 +160,7 @@ def eval(model, dataLoader_valid):
         valid_loss /= index_valid
         return valid_loss, top1, top5, map5, best_t
 
-def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10, checkPoint_start=0, lr=3e-4, batch_size=36):
+def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10, checkPoint_start=0, lr=3e-4, batch_size=36, kaggle=False):
     num_classes = 2233 * 2
     model = model_whale(num_classes=num_classes, inchannels=4, model_name=model_name).cuda()
     i = 0
@@ -171,7 +171,7 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
     if freeze:
         model.freeze()
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr,  betas=(0.9, 0.99), weight_decay=0.0002)
+#     optimizer = torch.optim.Adam(model.parameters(), lr=lr,  betas=(0.9, 0.99), weight_decay=0.0002)
     # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0002)
     resultDir = './WC_result/{}_{}'.format(model_name, fold_index)
     ImageDir = resultDir + '/image'
@@ -213,12 +213,55 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
     if not checkPoint_start == 0:
         log.write('  start from{}, l_rate ={} \n'.format(checkPoint_start, lr))
         log.write('freeze={}, batch_size={}, min_num_class={} \n'.format(freeze,batch_size, min_num_class))
-        model.load_pretrain(os.path.join(checkPoint, '%08d_model.pth' % (checkPoint_start)),skip=skips)
-        ckp = torch.load(os.path.join(checkPoint, '%08d_optimizer.pth' % (checkPoint_start)))
-        optimizer.load_state_dict(ckp['optimizer'])
+        if kaggle:
+            print ('LOAD FROM Pretrained Model on Kaggle')
+            num_classes = 5004 * 2
+            model = model_whale(num_classes=num_classes, inchannels=4, model_name=model_name).cuda()
+            if freeze:
+                model.freeze()
+            checkPoint_kaggle = checkPoint.replace('WC_result', 'result')
+            model.load_pretrain(os.path.join(checkPoint_kaggle, '%08d_model.pth' % (checkPoint_start)),skip=skips)
+            planes = 2048
+            num_classes = 2233 * 2
+            model.fc = nn.Linear(planes, num_classes)
+            init.normal_(model.fc.weight, std=0.001)
+            init.constant_(model.fc.bias, 0)
+            model.cuda()
+            optimizer = torch.optim.Adam(model.parameters(), lr=lr,  betas=(0.9, 0.99), weight_decay=0.0002)            
+#             ckp = torch.load(os.path.join(checkPoint_kaggle, '%08d_optimizer.pth' % (checkPoint_start)))
+#             optimizer.load_state_dict(ckp['optimizer'])
+            
+#             lr = optimizer.param_groups[0]['lr']
+#             weight_decay = optimizer.param_groups[0]['weight_decay']
+#             double_bias = True
+#             bias_decay = True
+
+#             params = []
+#             for key, value in dict(model.named_parameters()).items():
+#                 if value.requires_grad:
+#                     if 'bias' in key:
+#                         params += [{'params':[value],'lr':lr*(double_bias + 1), \
+#                                 'weight_decay': bias_decay and weight_decay or 0}]
+#                     else:
+#                         params += [{'params':[value],'lr':lr, 'weight_decay': weight_decay}]
+
+#             optimizer = torch.optim.Adam(params)
+        
+            
+        else:
+            print ('checkpoint:', checkPoint)
+            num_classes = 2233 * 2
+            model = model_whale(num_classes=num_classes, inchannels=4, model_name=model_name).cuda()
+            if freeze:
+                model.freeze()
+            optimizer = torch.optim.Adam(model.parameters(), lr=lr,  betas=(0.9, 0.99), weight_decay=0.0002)            
+            model.load_pretrain(os.path.join(checkPoint, '%08d_model.pth' % (checkPoint_start)),skip=skips)
+            ckp = torch.load(os.path.join(checkPoint, '%08d_optimizer.pth' % (checkPoint_start)))
+            optimizer.load_state_dict(ckp['optimizer'])
+            
         adjust_learning_rate(optimizer, lr)
         i = checkPoint_start
-        epoch = ckp['epoch']
+        epoch = 0  # ckp['epoch']
     log.write(
             ' rate     iter   epoch  | valid   top@1    top@5    map@5  | '
             'train    top@1    top@5    map@5 |'
@@ -308,10 +351,11 @@ if __name__ == '__main__':
         os.environ['CUDA_VISIBLE_DEVICES'] = '0' #'0,1,2,3,5'
         freeze = True
         model_name = 'se_resnet50'
-        fold_index = 5
+        fold_index = 1
         min_num_class = 0
-        checkPoint_start = 18600
+        checkPoint_start = 24400
         lr = 3e-4
         batch_size = 12
+        kaggle=False
         print(5005%batch_size)
-        train(freeze, fold_index, model_name, min_num_class, checkPoint_start, lr, batch_size)
+        train(freeze, fold_index, model_name, min_num_class, checkPoint_start, lr, batch_size, kaggle)

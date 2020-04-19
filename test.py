@@ -125,8 +125,8 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
         
                 
 if __name__ == '__main__':
-    checkPoint_start = 22000
-    fold_index = 5
+    checkPoint_start = 33400
+    fold_index = 1
     model_name = 'se_resnet50'
     test(checkPoint_start, fold_index, model_name)
 
