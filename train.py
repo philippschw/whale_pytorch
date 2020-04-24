@@ -191,14 +191,22 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
     if test_train:
         data_valid = pd.read_csv('./WC_input/valid_split_{}.csv'.format(fold_index), dtype='object')
         data_train = data_train.append(data_valid)
+        
 
+    if pseudo_labels:
+        data_test_pseudo_label = pd.read_csv('./WC_input/pseudo_labels.csv', dtype='object')
+        data_train = data_train.append(data_test_pseudo_label)
+        train_mode = 'data'
+    else:
+        train_mode = 'train'
+        
     names_train = data_train['Image'].tolist()
     labels_train = data_train['Id'].tolist()
     data_valid = pd.read_csv('./WC_input/valid_split_{}.csv'.format(fold_index), dtype='object')
     names_valid = data_valid['Image'].tolist()
     labels_valid = data_valid['Id'].tolist()
     num_data = len(names_train)
-    dst_train = WhaleDataset(names_train, labels_train,mode='train',transform_train=transform_train, min_num_classes=min_num_class)
+    dst_train = WhaleDataset(names_train, labels_train,mode=train_mode,transform_train=transform_train, min_num_classes=min_num_class)
     dataloader_train = DataLoader(dst_train, shuffle=True, drop_last=True, batch_size=batch_size, num_workers=12,
                                  collate_fn=train_collate)
     print(dst_train.__len__())
@@ -291,8 +299,8 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
 
 
             model.train()
-
             model.mode = 'train'
+            
             images, labels = data
             images = images.cuda()
             labels = labels.cuda().long()
@@ -342,10 +350,11 @@ if __name__ == '__main__':
         model_name = 'seresnext101'
         fold_index = 2
         min_num_class = 0
-        checkPoint_start = 17600
+        checkPoint_start = 20600
         lr = 3e-4
-        batch_size = 12
+        batch_size = 8
         kaggle=False
         test_train=True
+        pseudo_labels=True
         print(5005%batch_size)
         train(freeze, fold_index, model_name, min_num_class, checkPoint_start, lr, batch_size, kaggle)

@@ -130,8 +130,8 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
         
                 
 if __name__ == '__main__':
-    checkPoint_start = 17400
-    fold_index = 3
+    checkPoint_start = 20600
+    fold_index = 2
     model_name = 'seresnext101'
     test(checkPoint_start, fold_index, model_name)
 
