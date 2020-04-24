@@ -95,7 +95,12 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
             for name in names:
                 allnames.append(name)
         all_global_feat = normalize(torch.cat(global_feats), axis=-1) 
-        all_local_feat = normalize(torch.cat(local_feats), axis=-1) 
+        all_local_feat = normalize(torch.cat(local_feats), axis=-1)
+                
+        all_global_feat_np = all_global_feat.cpu().numpy()
+        
+        pd.DataFrame(all_global_feat_np[::2, :], index=allnames).to_csv(os.path.join(npy_dir, 'encoding_org_img.csv'), header=False)
+        pd.DataFrame(all_global_feat_np[1::2, :], index=allnames).to_csv(os.path.join(npy_dir, 'encoding_flp_img.csv'), header=False)
         
 #         dist_local = euclidean_dist(all_local_feat.reshape(-1, 4096), all_local_feat.reshape(-1, 4096))
         all_local_feat = F.avg_pool2d(all_local_feat, kernel_size=(8,1)).squeeze()
@@ -125,8 +130,8 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
         
                 
 if __name__ == '__main__':
-    checkPoint_start = 33400
-    fold_index = 1
-    model_name = 'se_resnet50'
+    checkPoint_start = 17400
+    fold_index = 3
+    model_name = 'seresnext101'
     test(checkPoint_start, fold_index, model_name)
 
