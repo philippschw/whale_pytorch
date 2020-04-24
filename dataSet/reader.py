@@ -56,7 +56,7 @@ class WhaleDataset(Dataset):
                 labels.append(label)
         self.labels = labels
 
-        if mode in ['train', 'valid']:
+        if mode in ['train', 'valid', 'data']:
             self.dict_train = self.balance_train()
             # self.labels = list(self.dict_train.keys())
             self.labels = [k for k in self.dict_train.keys()
@@ -100,6 +100,7 @@ class WhaleDataset(Dataset):
             dict_label[name] = id
             id += 1
         return dict_label
+    
     def balance_train(self):
         dict_train = {}
         for name, label in zip(self.names, self.labels):
