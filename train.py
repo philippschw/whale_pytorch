@@ -42,6 +42,7 @@ def valid_collate(batch):
     images = torch.stack(images, 0)
     labels = torch.from_numpy(np.array(labels))
     return images, labels, names
+
 def transform_train(image, mask, label):
     add_ = 0
     image = cv2.resize(image, (512, 256))
@@ -61,9 +62,9 @@ def transform_train(image, mask, label):
         image, mask = image[:,:,:3], image[:,:, 3]
     if random.random() < 0.5:
         image, mask = random_angle_rotate(image, mask, angles=(-25, 25))
-    # Transormation added from Humpback-Whale-Identification-Challenge-2019_2nd_palce_solution
-    if random.random() < 0.5:
-        image = aug_image(image)
+    # Transformation added from Humpback-Whale-Identification-Challenge-2019_2nd_palce_solution
+    # if random.random() < 0.5:
+    #     image = aug_image(image)
     # noise
     if random.random() < 0.5:
         index = random.randint(0, 1)
@@ -187,6 +188,10 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
     log.write(' batch_size :{} \n'.format(batch_size))
     # Image,Id
     data_train = pd.read_csv('./WC_input/train_split_{}.csv'.format(fold_index), dtype='object')
+    if test_train:
+        data_valid = pd.read_csv('./WC_input/valid_split_{}.csv'.format(fold_index), dtype='object')
+        data_train = data_train.append(data_valid)
+
     names_train = data_train['Image'].tolist()
     labels_train = data_train['Id'].tolist()
     data_valid = pd.read_csv('./WC_input/valid_split_{}.csv'.format(fold_index), dtype='object')
@@ -333,13 +338,14 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
 if __name__ == '__main__':
     if 1:
         os.environ['CUDA_VISIBLE_DEVICES'] = '0' #'0,1,2,3'
-        freeze = False
+        freeze = True
         model_name = 'seresnext101'
-        fold_index = 3
+        fold_index = 2
         min_num_class = 0
-        checkPoint_start = 13600
-        lr = 3e-5
-        batch_size = 4
+        checkPoint_start = 17600
+        lr = 3e-4
+        batch_size = 12
         kaggle=False
+        test_train=True
         print(5005%batch_size)
         train(freeze, fold_index, model_name, min_num_class, checkPoint_start, lr, batch_size, kaggle)
