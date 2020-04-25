@@ -61,8 +61,8 @@ def get_df_top20(dist_mat, test_imgs, allnames):
 
 def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
     mode = 'data'
-    names_test = os.listdir(f'./WC_input/{mode}')
-    sample_submission = pd.read_csv('./WC_input/sample_submission.csv', header=None)
+    names_test = os.listdir(f'./WC_Cinput/{mode}')
+    sample_submission = pd.read_csv('./WC_Cinput/sample_submission.csv', header=None)
     test_imgs = sample_submission.iloc[:, 0].tolist()
     batch_size = 80
     dst_test = WhaleTestDataset(names_test, mode=mode, transform=transform)
@@ -71,7 +71,7 @@ def test(checkPoint_start=0, fold_index=1, model_name='senet154'):
     id_label = {v:k for k, v in label_id.items()}
     # id_label[2233] = '-1'
     model = model_whale(num_classes=2233 * 2, inchannels=4, model_name=model_name).cuda()
-    resultDir = './WC_result/{}_{}'.format(model_name, fold_index)
+    resultDir = './WC_Cresult/{}_{}'.format(model_name, fold_index)
     checkPoint = os.path.join(resultDir, 'checkpoint')
 
     npy_dir = resultDir + '/out_{}'.format(checkPoint_start)

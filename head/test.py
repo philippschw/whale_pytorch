@@ -13,7 +13,7 @@ num_TTA = 2
 import ipdb
 
 def test(checkPoint_start=0, margin=1):
-    sample_submission = pd.read_csv('../WC_input/sample_submission.csv', header=None)
+    sample_submission = pd.read_csv('../WC_Cinput/sample_submission.csv', header=None)
     test_imgs = sample_submission.iloc[:, 0].tolist()
     batch_size = 1200
     dst_test = WhaleTestDataset()
@@ -21,7 +21,7 @@ def test(checkPoint_start=0, margin=1):
     model = HeadWhaleModel()
     if torch.cuda.is_available():
         model = model.cuda()
-    resultDir = './WC_result/{}'.format('HeadWhaleModel8')
+    resultDir = './WC_Cresult/{}'.format('HeadWhaleModel8')
     checkPoint = os.path.join(resultDir, 'checkpoint')
 
     npy_dir = resultDir + '/out_{}'.format(checkPoint_start)

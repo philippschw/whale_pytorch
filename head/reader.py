@@ -83,7 +83,7 @@ class WhaleTestDataset(Dataset):
         train = pd.read_csv('train_split_5.csv')
         val = pd.read_csv('valid_split_5.csv')
         all_df = train.append(val)
-        test = [Path(e).stem+'.jpg' for e in glob('../WC_input/test/*.jpg')]
+        test = [Path(e).stem+'.jpg' for e in glob('../WC_Cinput/test/*.jpg')]
         self.com_test = list(product(test, all_df.Image.tolist()))        
         
     def get_encoding(self, img_name):

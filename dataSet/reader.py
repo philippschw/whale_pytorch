@@ -64,7 +64,7 @@ class WhaleDataset(Dataset):
 
     def load_mask(self):
         print('loading mask...')
-        rle_masks = pd.read_csv('./WC_input/model_50A_slim_ensemble.csv')
+        rle_masks = pd.read_csv('./WC_Cinput/model_50A_slim_ensemble.csv')
         rle_masks = rle_masks[rle_masks['rle_mask'].isnull() == False]
         rle_masks.index = rle_masks['id']
         del rle_masks['id']
@@ -74,7 +74,7 @@ class WhaleDataset(Dataset):
     def load_bbox(self):
         # Image,x0,y0,x1,y1
         print('loading bbox...')
-        bbox = pd.read_csv('./WC_input/bboxs.csv')
+        bbox = pd.read_csv('./WC_Cinput/bboxs.csv')
         Images = bbox['Image'].tolist()
         x0s = bbox['x0'].tolist()
         y0s = bbox['y0'].tolist()
@@ -89,7 +89,7 @@ class WhaleDataset(Dataset):
 
     def load_labels(self):
         dtypes = {'id': 'int', 'name': 'str'}
-        label = pd.read_csv('./WC_input/label.csv', dtype=dtypes)
+        label = pd.read_csv('./WC_Cinput/label.csv', dtype=dtypes)
         labelName = label['name'].tolist()
         dict_label = {}
         id = 0
@@ -113,15 +113,15 @@ class WhaleDataset(Dataset):
         return len(self.labels)
 
     def get_image(self, name, transform, label, mode='train'):
-        image = cv2.imread('./WC_input/{}/{}'.format(mode, name))
+        image = cv2.imread('./WC_Cinput/{}/{}'.format(mode, name))
 
         if image is None:
-            image = cv2.imread('./WC_input/test/{}'.format(name))
+            image = cv2.imread('./WC_Cinput/test/{}'.format(name))
         try:
             mask = do_length_decode(self.rle_masks[name.split('.')[0]]['rle_mask'])
             mask = cv2.resize(mask, image.shape[:2][::-1])
         except:
-            mask = cv2.imread('./WC_input/masks/' + name, cv2.IMREAD_GRAYSCALE)
+            mask = cv2.imread('./WC_Cinput/masks/' + name, cv2.IMREAD_GRAYSCALE)
         x0, y0, x1, y1 = self.bbox_dict[name]
         # x0, y0, x1, y1 = [e if e > 0 else 0 for e in self.bbox_dict[name]]
         if mask is None:
@@ -173,13 +173,13 @@ class WhaleTestDataset(Dataset):
         return len(self.names)
 
     def get_image(self, name, transform, mode='train'):
-        image = cv2.imread('./WC_input/{}/{}'.format(mode, name))
+        image = cv2.imread('./WC_Cinput/{}/{}'.format(mode, name))
 
         try:
             mask = do_length_decode(self.rle_masks[name.split('.')[0]]['rle_mask'])
             mask = cv2.resize(mask, image.shape[:2][::-1])
         except:
-            mask = cv2.imread('./WC_input/masks/' + name, cv2.IMREAD_GRAYSCALE)
+            mask = cv2.imread('./WC_Cinput/masks/' + name, cv2.IMREAD_GRAYSCALE)
         if mask is None:
             mask = np.zeros_like(image[:, :, 0])
         x0, y0, x1, y1 = self.bbox_dict[name]
@@ -191,7 +191,7 @@ class WhaleTestDataset(Dataset):
 
     def load_labels(self):
         dtypes = {'id': 'int', 'name': 'str'}
-        label = pd.read_csv('./WC_input/label.csv', dtype=dtypes)
+        label = pd.read_csv('./WC_Cinput/label.csv', dtype=dtypes)
         labelName = label['name'].tolist()
         dict_label = {}
         id = 0
@@ -204,7 +204,7 @@ class WhaleTestDataset(Dataset):
         return dict_label
 
     def load_mask(self):
-        rle_masks = pd.read_csv('./WC_input/model_50A_slim_ensemble.csv')
+        rle_masks = pd.read_csv('./WC_Cinput/model_50A_slim_ensemble.csv')
         rle_masks = rle_masks[rle_masks['rle_mask'].isnull() == False]
         rle_masks.index = rle_masks['id']
         del rle_masks['id']
@@ -213,7 +213,7 @@ class WhaleTestDataset(Dataset):
 
     def load_bbox(self):
         print('loading bbox...')
-        bbox = pd.read_csv('./WC_input/bboxs.csv')
+        bbox = pd.read_csv('./WC_Cinput/bboxs.csv')
         Images = bbox['Image'].tolist()
         x0s = bbox['x0'].tolist()
         y0s = bbox['y0'].tolist()

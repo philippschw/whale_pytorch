@@ -61,7 +61,7 @@ def train(checkPoint_start=0, lr=3e-4, batch_size=36):
     epoch = 0
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr,  betas=(0.9, 0.99), weight_decay=0.002)
-    resultDir = './WC_result/{}'.format('HeadWhaleModel8')
+    resultDir = './WC_Cresult/{}'.format('HeadWhaleModel8')
     writer = SummaryWriter(resultDir)
     ImageDir = resultDir + '/image'
     checkPoint = os.path.join(resultDir, 'checkpoint')

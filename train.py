@@ -177,7 +177,7 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr,  betas=(0.9, 0.99), weight_decay=0.0002)
     # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0002)
-    resultDir = './WC_result/{}_{}'.format(model_name, fold_index)
+    resultDir = './WC_Cresult/{}_{}'.format(model_name, fold_index)
     ImageDir = resultDir + '/image'
     checkPoint = os.path.join(resultDir, 'checkpoint')
     os.makedirs(checkPoint, exist_ok=True)
@@ -187,14 +187,14 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
     log.write(' start_time :{} \n'.format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
     log.write(' batch_size :{} \n'.format(batch_size))
     # Image,Id
-    data_train = pd.read_csv('./WC_input/train_split_{}.csv'.format(fold_index), dtype='object')
+    data_train = pd.read_csv('./WC_Cinput/train_split_{}.csv'.format(fold_index), dtype='object')
     if test_train:
-        data_valid = pd.read_csv('./WC_input/valid_split_{}.csv'.format(fold_index), dtype='object')
+        data_valid = pd.read_csv('./WC_Cinput/valid_split_{}.csv'.format(fold_index), dtype='object')
         data_train = data_train.append(data_valid)
         
 
     if pseudo_labels:
-        data_test_pseudo_label = pd.read_csv('./WC_input/pseudo_labels.csv', dtype='object')
+        data_test_pseudo_label = pd.read_csv('./WC_Cinput/pseudo_labels.csv', dtype='object')
         data_train = data_train.append(data_test_pseudo_label)
         train_mode = 'data'
     else:
@@ -202,7 +202,7 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
         
     names_train = data_train['Image'].tolist()
     labels_train = data_train['Id'].tolist()
-    data_valid = pd.read_csv('./WC_input/valid_split_{}.csv'.format(fold_index), dtype='object')
+    data_valid = pd.read_csv('./WC_Cinput/valid_split_{}.csv'.format(fold_index), dtype='object')
     names_valid = data_valid['Image'].tolist()
     labels_valid = data_valid['Id'].tolist()
     num_data = len(names_train)
@@ -235,7 +235,7 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
             model = model_whale(num_classes=num_classes, inchannels=4, model_name=model_name).cuda()
             if freeze:
                 model.freeze()
-            checkPoint_kaggle = checkPoint.replace('WC_result', 'result')
+            checkPoint_kaggle = checkPoint.replace('WC_Cresult', 'result')
             model.load_pretrain(os.path.join(checkPoint_kaggle, '%08d_model.pth' % (checkPoint_start)),skip=skips)
             planes = 2048
             num_classes = 2233 * 2
@@ -345,16 +345,16 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
 
 if __name__ == '__main__':
     if 1:
-        os.environ['CUDA_VISIBLE_DEVICES'] = '0' #'0,1,2,3'
-        freeze = True
+        os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3'
+        freeze = False
         model_name = 'seresnext101'
         fold_index = 2
-        min_num_class = 0
-        checkPoint_start = 20600
+        min_num_class = 10
+        checkPoint_start = 0
         lr = 3e-4
-        batch_size = 8
+        batch_size = 12
         kaggle=False
-        test_train=True
-        pseudo_labels=True
+        test_train=False
+        pseudo_labels=False
         print(5005%batch_size)
         train(freeze, fold_index, model_name, min_num_class, checkPoint_start, lr, batch_size, kaggle)
