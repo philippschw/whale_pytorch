@@ -57,7 +57,7 @@ def hard_example_mining(dist_mat, labels, return_inds=False):
     N = dist_mat.size(0)
 
     # shape [N, N]
-    new_whale_indexs = (labels == 2233 * 2).nonzero()
+    new_whale_indexs = (labels == 7238 * 2).nonzero()
     is_pos = labels.expand(N, N).eq(labels.expand(N, N).t())
     is_neg = labels.expand(N, N).ne(labels.expand(N, N).t())
     for i in new_whale_indexs:

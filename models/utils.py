@@ -87,10 +87,10 @@ def weights_init_classifier(m):
 def try_bestfitting_loss(results, labels, selected_num=10):
     batch_size, class_num = results.shape
     labels = labels.view(-1, 1)
-    one_hot_target = torch.zeros(batch_size, class_num + 1).cuda().scatter_(1, labels, 1)[:, :2233].contiguous()
+    one_hot_target = torch.zeros(batch_size, class_num + 1).cuda().scatter_(1, labels, 1)[:, :7238].contiguous()
     error_loss = lovasz_hinge(results, one_hot_target)
     labels = labels.view(-1)
-    indexs_new = (labels != 2233).nonzero().view(-1)
+    indexs_new = (labels != 7238).nonzero().view(-1)
     if len(indexs_new) == 0:
         return error_loss
     results_nonew = results[torch.arange(0, len(results))[indexs_new], labels[indexs_new]].contiguous()
@@ -104,14 +104,14 @@ def sigmoid_loss(results, labels, topk=10):
         results = results.view(1, -1)
     batch_size, class_num = results.shape
     labels = labels.view(-1, 1)
-    one_hot_target = torch.zeros(batch_size, class_num + 1).cuda().scatter_(1, labels, 1)[:, :2233 * 2]
+    one_hot_target = torch.zeros(batch_size, class_num + 1).cuda().scatter_(1, labels, 1)[:, :7238 * 2]
     #lovasz_loss = lovasz_hinge(results, one_hot_target)
     error = torch.abs(one_hot_target - torch.sigmoid(results))
     error = error.topk(topk, 1, True, True)[0].contiguous()
     target_error = torch.zeros_like(error).float().cuda()
     error_loss = nn.BCELoss(reduce=True)(error, target_error)
     labels = labels.view(-1)
-    indexs_new = (labels != 2233 * 2).nonzero().view(-1)
+    indexs_new = (labels != 7238 * 2).nonzero().view(-1)
     if len(indexs_new) == 0:
         return error_loss
     results_nonew = results[torch.arange(0, len(results))[indexs_new], labels[indexs_new]].contiguous()
@@ -120,6 +120,6 @@ def sigmoid_loss(results, labels, topk=10):
     return nonew_loss + error_loss
 
 if __name__ == '__main__':
-    results = torch.randn((4, 2233)).cuda()
-    targets = torch.from_numpy(np.array([1,2,3,2233])).cuda()
+    results = torch.randn((4, 7238)).cuda()
+    targets = torch.from_numpy(np.array([1,2,3,7238])).cuda()
     print(try_bestfitting_loss(results, targets))

@@ -58,7 +58,7 @@ def transform_train(image, mask, label):
         if random.random() < 0.5:
             image = np.fliplr(image)
             if not label == '-1':
-                add_ += 2233
+                add_ += 7238
         image, mask = image[:,:,:3], image[:,:, 3]
     if random.random() < 0.5:
         image, mask = random_angle_rotate(image, mask, angles=(-25, 25))
@@ -136,7 +136,7 @@ def eval(model, dataLoader_valid):
             feature, local_feat, results = data_parallel(model, images)
             model.getLoss(feature[::2], local_feat[::2], results[::2], labels)
             results = torch.sigmoid(results)
-            results_zeros = (results[::2, :2233] + results[1::2, 2233:])/2
+            results_zeros = (results[::2, :7238] + results[1::2, 7238:])/2
             all_results.append(results_zeros)
             all_labels.append(labels)
             b = len(labels)
@@ -149,7 +149,7 @@ def eval(model, dataLoader_valid):
             ts = np.linspace(0.1, 0.9, 9)
             for t in ts:
                 results_t = torch.cat([all_results, torch.ones_like(all_results[:, :1]).float().cuda() * t], 1)
-                all_labels[all_labels == 2233 * 2] = 2233
+                all_labels[all_labels == 7238 * 2] = 7238
                 top1_, top5_ = accuracy(results_t, all_labels)
                 map5_ = mapk(all_labels, results_t, k=5)
                 map5s.append(map5_)
@@ -165,7 +165,7 @@ def eval(model, dataLoader_valid):
         return valid_loss, top1, top5, map5, best_t
 
 def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10, checkPoint_start=0, lr=3e-4, batch_size=36, kaggle=False):
-    num_classes = 2233 * 2
+    num_classes = 7238 * 2
     model = model_whale(num_classes=num_classes, inchannels=4, model_name=model_name).cuda()
     i = 0
     iter_smooth = 50
@@ -238,7 +238,7 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
             checkPoint_kaggle = checkPoint.replace('WC_Cresult', 'result')
             model.load_pretrain(os.path.join(checkPoint_kaggle, '%08d_model.pth' % (checkPoint_start)),skip=skips)
             planes = 2048
-            num_classes = 2233 * 2
+            num_classes = 7238 * 2
             model.fc = nn.Linear(planes, num_classes)
             init.normal_(model.fc.weight, std=0.001)
             init.constant_(model.fc.bias, 0)
@@ -247,7 +247,7 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
         else:
             print ('GDSC Dataset')
             print ('checkpoint:', checkPoint)
-            num_classes = 2233 * 2
+            num_classes = 7238 * 2
             model = model_whale(num_classes=num_classes, inchannels=4, model_name=model_name).cuda()
             if freeze:
                 model.freeze()
