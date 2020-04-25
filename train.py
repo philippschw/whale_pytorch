@@ -345,14 +345,14 @@ def train(freeze=False, fold_index=1, model_name='seresnext50',min_num_class=10,
 
 if __name__ == '__main__':
     if 1:
-        os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3'
-        freeze = False
+        os.environ['CUDA_VISIBLE_DEVICES'] = '0'# '0,1,2,3'
+        freeze = True
         model_name = 'seresnext101'
-        fold_index = 2
+        fold_index = 1
         min_num_class = 10
         checkPoint_start = 0
         lr = 3e-4
-        batch_size = 12
+        batch_size = 6
         kaggle=False
         test_train=False
         pseudo_labels=False
