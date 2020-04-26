@@ -77,7 +77,7 @@ class L2(object):
                             ], axis=1, keys=["img", "dist", "class"])
         
         self.test = pd.DataFrame(test.Image).join(test['top20imgs'].apply(pd.Series))
-        self.test.columns = list(range(21))
+        self.test.columns = list(range(n+1))
         
         
         

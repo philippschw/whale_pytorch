@@ -80,7 +80,7 @@ class Post_Pipeline(object):
         ma = ma.reset_index()
         ma.columns = list(range(ma.shape[1]))
         
-        ma['new'] = ma.apply(lambda x: inject_train_class_img(x), axis=1)
+        ma['new'] = ma.apply(lambda x: inject_ftrain_class_img(x), axis=1)
         return ma['new'].apply(pd.Series).set_index(0)
         
     def match_images_on_fname(self, df=False):
