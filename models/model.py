@@ -164,7 +164,13 @@ class model_whale(nn.Module):
 
 
     def load_pretrain(self, pretrain_file, skip=[]):
-        pretrain_state_dict = torch.load(pretrain_file)
+        
+        if torch.cuda.is_available():
+            map_location=lambda storage, loc: storage.cuda()
+        else:
+            map_location='cpu'
+        
+        pretrain_state_dict = torch.load(pretrain_file, map_location=map_location)
         state_dict = self.state_dict()
 
         keys = list(state_dict.keys())

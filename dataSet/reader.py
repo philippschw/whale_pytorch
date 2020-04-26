@@ -9,6 +9,8 @@ import cv2
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 
+import ipdb
+
 BASE_SIZE = 256
 def do_length_decode(rle, H=192, W=384, fill_value=255):
     mask = np.zeros((H,W), np.uint8)
@@ -114,6 +116,7 @@ class WhaleDataset(Dataset):
 
     def get_image(self, name, transform, label, mode='train'):
         image = cv2.imread('./WC_input/{}/{}'.format(mode, name))
+        ipdb.set_trace()
 
         if image is None:
             image = cv2.imread('./WC_input/test/{}'.format(name))
@@ -226,7 +229,7 @@ class WhaleTestDataset(Dataset):
         return bbox_dict
     
     def __getitem__(self, index):
-        if self.mode in ['test', 'data']:
+        if self.mode in ['test', 'data', 'prediction']:
             name = self.names[index]
             image = self.get_image(name, self.transform, mode=self.mode)
             return image, name

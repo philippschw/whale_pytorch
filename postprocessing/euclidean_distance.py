@@ -6,8 +6,8 @@ from time import time
 from tqdm import tqdm
 tqdm.pandas()
 
-fp = '/home/pt-support/Humpback-Whale-Identification-1st-/WC_input/'
-rp = '/home/pt-support/Humpback-Whale-Identification-1st-/WC_result/'
+fp = './WC_input/'
+rp = './WC_result/'
 
 sample_submission = pd.read_csv(rp+'sample_submission.csv', header=None)
 sample_submission = sample_submission.set_index(0)
@@ -22,9 +22,13 @@ class ExactIndex():
         self.labels = labels    
    
     def build(self):
-        self.index = faiss.IndexFlatL2(self.dimension,)
+        self.index = faiss.IndexFlatL2(self.dimension)
         self.index.add(self.vectors)
         
+    def add_img(self, vectors, allnames):
+        self.labels = np.append(self.labels, np.array(allnames))
+        self.index.add(np.ascontiguousarray(vectors.astype('float32')))
+    
     def query(self, vectors, k=10):
         distances, indices = self.index.search(vectors, k) 
         return distances, [self.labels[i] for i in indices[0]]

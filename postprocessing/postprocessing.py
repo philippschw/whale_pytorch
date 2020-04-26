@@ -8,8 +8,8 @@ import re
 import ipdb
 
 
-fp = '/home/pt-support/Humpback-Whale-Identification-1st-/WC_input/'
-rp = '/home/pt-support/Humpback-Whale-Identification-1st-/WC_result/'
+fp = './WC_input/'
+rp = './WC_result/'
 
 
 train = pd.read_csv(fp+'train.csv') 
