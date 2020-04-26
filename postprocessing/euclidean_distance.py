@@ -57,6 +57,7 @@ class L2(object):
         self.index.build()
         
     def querytopnclosest(self, n):
+        self.n = n
         self.dat = np.ascontiguousarray(self.enc["embeddings"].apply(pd.Series).values).astype('float32')
         
         test = self.enc[self.enc.Image.isin(sample_submission.index)]

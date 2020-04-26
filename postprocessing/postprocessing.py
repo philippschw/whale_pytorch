@@ -18,6 +18,7 @@ image_to_id = dict(zip(train.Image, train.Id))
 train = train.groupby('Id')['Image'].agg({lambda x: set(x)})
 id_to_images = dict(zip(train.index, train.iloc[:, 0]))
 
+
 def inject_train_class_img(row):
     ref = row[0]
     s = row[1:].copy()
@@ -80,7 +81,7 @@ class Post_Pipeline(object):
         ma = ma.reset_index()
         ma.columns = list(range(ma.shape[1]))
         
-        ma['new'] = ma.apply(lambda x: inject_ftrain_class_img(x), axis=1)
+        ma['new'] = ma.apply(lambda x: inject_train_class_img(x), axis=1)
         return ma['new'].apply(pd.Series).set_index(0)
         
     def match_images_on_fname(self, df=False):
@@ -135,7 +136,7 @@ class Post_Pipeline(object):
 
     def view_matched_images(self):
         f, axarr = plt.subplots(self.imgs_id_matched.shape[0], 2)
-        f.set_figwidth(20)
+        f.set_figwidth(10)
         f.set_figheight(50)
 
         for i in range(self.imgs_id_matched.shape[0]):
@@ -144,8 +145,8 @@ class Post_Pipeline(object):
             f1 = self.imgs_id_matched.loc[i, '0_x']
             f2 = self.imgs_id_matched.loc[i, '0_y']
 
-            a =  cv2.imread(fp + 'test/'+f1)
-            b =  cv2.imread(fp + 'test/'+f2)
+            a =  plt.imread(fp + 'test/'+f1)
+            b =  plt.imread(fp + 'test/'+f2)
             a = cv2.resize(a, (384, 192))
             b = cv2.resize(b, (384, 192))
 
@@ -156,7 +157,7 @@ class Post_Pipeline(object):
             axarr[i,1].axis('off')
             axarr[i,0].set_title(f1)
             axarr[i,1].set_title(f2)
-            
+        plt.tight_layout()
         plt.show()
         
         
@@ -174,19 +175,23 @@ class Post_Pipeline(object):
             print ('NON Valid DataFrame')
             
         img_ref_name = img_name
-
+        print (img_ref_name)
         f, axarr = plt.subplots(5, 5)
         f.set_figwidth(20)
         f.set_figheight(15)
 
         for i in range(0, 20):
             img_name = ma.loc[img_ref_name, i+1]
+            print (i+1)
+            print (img_name)
             img =  plt.imread(fp +'data/'+img_name)
 
             axarr[int(i/5)+1, i%5].imshow(img)
             axarr[int(i/5)+1, i%5].axis('off')
-            axarr[int(i/5)+1, i%5].set_title(img_name)
-
+            if img_name in image_to_id.keys():
+                axarr[int(i/5)+1, i%5].set_title(f'{img_name}-{image_to_id[img_name]}')
+            else:
+                axarr[int(i/5)+1, i%5].set_title(f'{img_name}-')
         img = plt.imread(fp + 'data/'+img_ref_name)
         axarr[0, 0].imshow(img)
         axarr[0, 0].axis('off')
