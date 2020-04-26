@@ -2,6 +2,21 @@ import cv2
 import numpy as np
 import random
 import torch
+
+from imgaug import augmenters as iaa
+
+def aug_image(image):
+
+    seq = iaa.Sequential([
+        iaa.Affine(rotate= (-15, 15),
+                   shear = (-15, 15),
+                   mode='edge')
+
+    ])
+
+    image = seq.augment_image(image)
+    return image
+
 def random_cropping(image, target_shape=(128, 128), p=0.5):
     zeros = np.zeros(target_shape)
     target_w, target_h = target_shape

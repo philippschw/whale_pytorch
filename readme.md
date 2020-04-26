@@ -1,3 +1,6 @@
+CUDA_VISIBLE_DEVICES=0 python main.py --mode=train --model=resnet101 --image_h=256 --image_w=512 --fold_index=0 --batch_size=12
+
+
 # Kaggle Humpback Whale Identification Challenge  1st place code
 Add SSH User: eval $(ssh-agent -s) ssh-add ~/.ssh/backup/id_rsa
 
