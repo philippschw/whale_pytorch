@@ -8,10 +8,24 @@ __pycache__/
 
 # Tensorflow Models
 *.hdf5
+*.model
+*.h5
+bboxs/cropping.model
+bboxs/humpback-whale-identification.zip
+bboxs/test2/
+bboxs/train.zip
+bboxs/train/
+bboxs/train2/
+
+head/*.csv
 
 # input
 input/
 result/
+WC_input/
+WC_result/
+WC_Cinput/
+WC_Cresult/
 
 # Distribution / packaging
 .Python
