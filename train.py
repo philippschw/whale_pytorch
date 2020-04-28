@@ -355,6 +355,6 @@ if __name__ == '__main__':
         batch_size = 8
         kaggle=False
         test_train=True
-        pseudo_labels=True
+        pseudo_labels=False
         print(5005%batch_size)
         train(freeze, fold_index, model_name, min_num_class, checkPoint_start, lr, batch_size, kaggle)
